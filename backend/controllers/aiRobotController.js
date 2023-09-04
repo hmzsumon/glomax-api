@@ -675,3 +675,19 @@ exports.updateAiRobotAutoCreate = catchAsyncErrors(async (req, res, next) => {
 		message: 'Ai Robot auto create updated successfully',
 	});
 });
+
+// update all users ai_robot to false
+exports.updateAllUsersAiRobot = catchAsyncErrors(async (req, res, next) => {
+	const users = await User.find();
+
+	for (let i = 0; i < users.length; i++) {
+		const user = users[i];
+		user.ai_robot = false;
+		await user.save();
+	}
+
+	res.status(200).json({
+		success: true,
+		message: 'All users ai_robot updated successfully',
+	});
+});

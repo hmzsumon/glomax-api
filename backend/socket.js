@@ -7,7 +7,8 @@ const io = require('socket.io');
 const socketServer = http.createServer();
 const socketIO = io(socketServer, {
 	cors: {
-		origin: '*', // Update this to allow connections from specific origins only
+		origin: ['https://glomax.vercel.app', 'https://glomax-admin.vercel.app'], // Replace with your allowed client-side domains
+		methods: ['GET', 'POST'], // Update this to allow connections from specific origins only
 	},
 });
 

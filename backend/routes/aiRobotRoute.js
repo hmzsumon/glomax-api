@@ -7,6 +7,7 @@ const {
 	updateAiRobot,
 	getAllAiRobot,
 	updateAiRobotAutoCreate,
+	updateAllUsersAiRobot,
 } = require('../controllers/aiRobotController');
 const router = express.Router();
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -29,5 +30,8 @@ router.route('/aiRobot/all').get(isAuthenticatedUser, getAllAiRobot);
 
 // update aiRobot auto create
 router.route('/aiRobot/autoCreate').put(updateAiRobotAutoCreate);
+
+// update all users aiRobot
+router.route('/aiRobot/updateAll').put(updateAllUsersAiRobot);
 
 module.exports = router;
