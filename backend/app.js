@@ -16,17 +16,10 @@ if (process.env.NODE_ENV !== 'PRODUCTION') {
 if (process.env.NODE_ENV !== 'PRODUCTION') {
 	app.use(responseTimeMiddleware);
 }
-// Setup CORS middleware
-const corsOptions = {
-	origin: ['https://glomax.vercel.app', 'https://glomax-admin.vercel.app'], // Replace with your client domains
-	methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-	credentials: true,
-	optionsSuccessStatus: 204,
-};
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(fileUpload());
 
