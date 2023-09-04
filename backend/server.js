@@ -27,7 +27,7 @@ cloudinary.config({
 	api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-s; // Start the server
+// Start the server
 const port = process.env.PORT || 5000; // Use the environment variable PORT if available, otherwise
 const httpServer = server.listen(port, () => {
 	console.log(`Server is working on http://localhost:${port}`);
