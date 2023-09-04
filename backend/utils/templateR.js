@@ -1,5 +1,6 @@
-<!DOCTYPE html>
-<html>
+module.exports = function registrationTemplate(name, code) {
+	console.log(name, code);
+	return `<html>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -24,7 +25,7 @@
 				width: 70vw;
 				margin: auto;
 				/* width: 20vw; */
-				background: url('https://www.glomax.org/_next/image?url=%2Frapid-logo1.png&w=256&q=75')
+				background: url('https://glomax.vercel.app/_next/image?url=%2Frapid-logo1.png&w=256&q=75')
 					no-repeat center center;
 				background-size: contain;
 				/* Make the logo responsive */
@@ -75,7 +76,7 @@
 			</div>
 			<div class="content">
 				<h2>Glomax Transaction</h2>
-				<p>Hello [Recipient's Name],</p>
+				<p>Hello ${name},</p>
 				<h3>Payment Received Successfully</h3>
 				<p>
 					You have received an amount
@@ -122,6 +123,7 @@
 			</div>
 			<div class="footer">
 				<p>
+
 					Risk warning: Cryptocurrency trading is subject to high market risk.
 					Globax will make the best efforts to choose high-quality coins, but
 					will not be responsible for your trading losses. Please trade with
@@ -138,4 +140,5 @@
 			</div>
 		</div>
 	</body>
-</html>
+</html>`;
+};

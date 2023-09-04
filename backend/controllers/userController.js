@@ -17,7 +17,7 @@ const { v4: uuidv4 } = require('uuid');
 const ip = require('ip');
 const Mining = require('../models/miningModel');
 const PlayDetails = require('../models/playDetails');
-
+const registrationTemplate = require('../utils/templateR');
 const Company = require('../models/companyModel');
 const companyId = process.env.COMPANY_ID;
 
@@ -274,10 +274,12 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
 	company.users.new_users += 1;
 	await company.save();
 
+	const html = registrationTemplate(name, verify_code);
 	// send verify code to user email
 	sendEmail({
 		email: user.email,
 		subject: 'Glomax Verification Code',
+		html: html,
 		message: `Dear ${user.name},\n\nYour verification code is ${verify_code}.\n\nThanks,\nGlomax Team`,
 	});
 
