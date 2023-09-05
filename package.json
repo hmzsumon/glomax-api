@@ -4,7 +4,7 @@
 	"description": "",
 	"main": "backend/server.js",
 	"scripts": {
-		"start": "nodemon --watch backend --exec node --experimental-modules backend/server.js",
+		"start": "nodemon --watch backend --exec node --max-old-space-size=4096 --experimental-modules backend/server.js",
 		"dev": "nodemon backend/server.js"
 	},
 	"author": "",
