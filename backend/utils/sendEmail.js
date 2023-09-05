@@ -18,6 +18,7 @@ const sendEmail = async (option) => {
 		};
 		sendSmtpEmail.to = [{ email: option.email }];
 		await apiInstance.sendTransacEmail(sendSmtpEmail);
+		console.log('Email sent successfully');
 	} catch (err) {
 		console.log(err);
 	}
