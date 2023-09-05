@@ -8,12 +8,7 @@ const socketServer = http.createServer();
 const socketIO = io(socketServer, {
 	transports: ['websocket', 'polling'],
 	cors: {
-		origin: [
-			'https://glomax.vercel.app',
-			'https://glomax-admin.vercel.app',
-			'http://localhost:3000',
-			'http://localhost:3001',
-		], // Replace with your allowed client-side domains
+		origin: ['https://glomax.vercel.app', 'https://glomax-admin.vercel.app'], // Replace with your allowed client-side domains
 		methods: ['GET', 'POST'], // Update this to allow connections from specific origins only
 	},
 });
