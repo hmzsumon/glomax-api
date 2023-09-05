@@ -270,8 +270,10 @@ exports.editAiRobot = catchAsyncErrors(async (req, res, next) => {
 	});
 });
 
+// cron.schedule('*/30 * * * *', async () => {});
+
 // cron job for active aiRobot every 5 minutes
-cron.schedule('*/5 * * * *', async () => {
+cron.schedule('*/10 * * * *', async () => {
 	const aiRobots = await AiRobot.find({
 		is_active: true,
 	});
@@ -283,7 +285,7 @@ cron.schedule('*/5 * * * *', async () => {
 	let profit = {
 		1: 0.015,
 		2: 0.016,
-		3: 0.018,
+		3: 0.0181,
 	};
 
 	for (let i = 4; i <= 170; i++) {
@@ -293,8 +295,8 @@ cron.schedule('*/5 * * * *', async () => {
 	for (let i = 0; i < aiRobots.length; i++) {
 		const aiRobot = aiRobots[i];
 		const age = Math.floor((Date.now() - aiRobot.open_time) / 60000);
-		console.log(aiRobot.customer_id, age);
-		if (age >= 5) {
+		// console.log(aiRobot.customer_id, age);
+		if (age >= 1410) {
 			const profit_amount =
 				aiRobot.current_investment * profit[aiRobot.grid_no];
 			const aiRobotCharge = profit_amount * 0.02;
@@ -390,6 +392,7 @@ cron.schedule('*/5 * * * *', async () => {
 			aiRobot.profit = profit_amount;
 			aiRobot.trade_charge = aiRobotCharge;
 			aiRobot.take_profit = netProfit;
+			aiRobot.processing = true;
 			await aiRobot.save();
 
 			// update company balance
@@ -398,21 +401,106 @@ cron.schedule('*/5 * * * *', async () => {
 			company.income.ai_robot_income += aiRobotCharge * 0.1;
 			company.income.total_income += aiRobotCharge * 0.1;
 			await company.save();
-
-			if (aiRobot.auto_create) {
-				await autoCreateAiRobot(aiRobot);
-				console.log('Auto create aiRobot');
-			}
-
-			// console.log('User', user.username, user.ai_balance);
-			// console.log('Parent 1', parent_1.username, parent_1.m_balance);
-			// console.log('Parent 2', parent_2.username, parent_2.m_balance);
-			// console.log('Parent 3', parent_3.username, parent_3.m_balance);
-
-			// console.log('Ai Robot completed');
 		}
 	}
 });
+
+// // cron job for auto create aiRobot every 2 minutes
+// cron.schedule('*/1 * * * *', async () => {
+// 	// find all aiRobot auto_create true
+// 	const aiRobotsAutoCreate = await AiRobot.find({
+// 		is_active: false,
+// 		auto_create: true,
+// 		processing: true,
+// 	});
+
+// 	console.log(aiRobotsAutoCreate.length);
+
+// 	for (let i = 0; i < aiRobotsAutoCreate.length; i++) {
+// 		const aiRobot = aiRobotsAutoCreate[i];
+// 		const {
+// 			current_investment,
+// 			pair,
+// 			grid_no,
+// 			price_range,
+// 			last_price,
+// 			auto_create,
+// 			user_id,
+// 		} = aiRobot;
+
+// 		const user = await User.findById(user_id);
+// 		if (!user) {
+// 			return console.log('User not found');
+// 		}
+// 		// console.log(req.body);
+// 		// check if user al_balance is greater than investment
+// 		if (user.al_balance < current_investment) {
+// 			// update aiRobot
+// 			aiRobot.is_active = false;
+// 			aiRobot.close_time = Date.now();
+// 			aiRobot.status = 'cancelled';
+// 			aiRobot.auto_create = false;
+// 			await aiRobot.save();
+// 			return console.log('Insufficient balance');
+// 		}
+
+// 		// find aiRobotRecord by user_id if not found create new
+// 		let aiRobotRecord = await AiRobotRecord.findOne({ user_id: user._id });
+// 		if (!aiRobotRecord) {
+// 			aiRobotRecord = await AiRobotRecord.create({
+// 				user_id: user._id,
+// 				customer_id: user.customer_id,
+// 			});
+// 		}
+
+// 		// console.log(aiRobotRecord._id);
+
+// 		const company = await Company.findById(companyId);
+// 		if (!company) {
+// 			return console.log('Company not found');
+// 		}
+
+// 		const newAiRobot = await AiRobot.create({
+// 			user_id: user._id,
+// 			customer_id: user.customer_id,
+// 			total_investment: current_investment,
+// 			current_investment: current_investment,
+// 			auto_create,
+// 			pair,
+// 			grid_no,
+// 			price_range,
+// 			profit_percent: '1.5% - 30%',
+// 			last_price,
+// 			auto_create,
+// 			open_time: Date.now(),
+// 			processing: false,
+// 		});
+
+// 		// update user balance
+// 		user.ai_balance -= Number(current_investment);
+// 		createTransaction(
+// 			user._id,
+// 			'cashOut',
+// 			current_investment,
+// 			'aiRobot',
+// 			`Investment in Ai Robot fro auto create`
+// 		);
+// 		user.ai_robot = true;
+// 		await user.save();
+
+// 		// update aiRobotRecord
+// 		aiRobotRecord.active_robot_id = newAiRobot._id;
+// 		aiRobotRecord.total_investment += Number(current_investment);
+// 		aiRobotRecord.current_investment += Number(current_investment);
+// 		aiRobotRecord.total_robot_count += 1;
+// 		await aiRobotRecord.save();
+
+// 		// update company balance
+// 		company.total_ai_balance -= Number(current_investment);
+// 		company.total_ai_robot_balance += Number(current_investment);
+// 		await company.save();
+// 	}
+// });
 
 // function autoCreateAiRobot()
 

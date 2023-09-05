@@ -82,6 +82,10 @@ const aiRobotSchema = new mongoose.Schema(
 			type: Boolean,
 			default: false,
 		},
+		processing: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	{ timestamps: true }
 );
