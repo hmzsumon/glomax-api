@@ -108,43 +108,43 @@ async function countdown(game) {
 }
 
 // game 1 minute
-// const function1Minute = async () => {
-// 	// find today all 1 minute games
-// 	const today = new Date();
-// 	const allGame = await WinGame.find({
-// 		createdAt: {
-// 			$gte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
-// 			$lte: new Date(
-// 				today.getFullYear(),
-// 				today.getMonth(),
-// 				today.getDate() + 1
-// 			),
-// 		},
-// 		time: 60,
-// 	});
-// 	const game_id =
-// 		generateUniqueId() + allGame.length.toString().padStart(2, '0');
-// 	const game_title = `Game1m-${game_id.slice(6)}`;
-// 	// Create a 1-minute test
-// 	const game = await WinGame.create({
-// 		game_id: game_id,
-// 		time: 60, // 1 minute
-// 		game_type: '1m',
-// 		game_title: game_title,
-// 		start_time: Date.now(),
-// 		buttons: buttons,
-// 	});
-// 	console.log('');
-// 	console.log(colors.green('Created Game 1m', game.game_title));
-// 	console.log('');
-// 	const ioData = {
-// 		id: game._id,
-// 		game_id: game.game_id,
-// 		time: game.time,
-// 	};
-// 	global.io.to('test-room').emit('game-1m', ioData);
-// 	await countdown(game);
-// };
+const function1Minute = async () => {
+	// find today all 1 minute games
+	const today = new Date();
+	const allGame = await WinGame.find({
+		createdAt: {
+			$gte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+			$lte: new Date(
+				today.getFullYear(),
+				today.getMonth(),
+				today.getDate() + 1
+			),
+		},
+		time: 60,
+	});
+	const game_id =
+		generateUniqueId() + allGame.length.toString().padStart(2, '0');
+	const game_title = `Game1m-${game_id.slice(6)}`;
+	// Create a 1-minute test
+	const game = await WinGame.create({
+		game_id: game_id,
+		time: 60, // 1 minute
+		game_type: '1m',
+		game_title: game_title,
+		start_time: Date.now(),
+		buttons: buttons,
+	});
+	console.log('');
+	console.log(colors.green('Created Game 1m', game.game_title));
+	console.log('');
+	const ioData = {
+		id: game._id,
+		game_id: game.game_id,
+		time: game.time,
+	};
+	global.io.to('test-room').emit('game-1m', ioData);
+	await countdown(game);
+};
 
 // game 3 minute
 const function3Minutes = async () => {
@@ -186,43 +186,43 @@ const function3Minutes = async () => {
 };
 
 // // game 5 minute
-// const function5Minutes = async () => {
-// 	// find today all 5 minute games
-// 	const today = new Date();
-// 	const allGame = await WinGame.find({
-// 		createdAt: {
-// 			$gte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
-// 			$lte: new Date(
-// 				today.getFullYear(),
-// 				today.getMonth(),
-// 				today.getDate() + 1
-// 			),
-// 		},
-// 		time: 300,
-// 	});
-// 	const game_id =
-// 		generateUniqueId() + allGame.length.toString().padStart(2, '0');
-// 	const game_title = `Game5m-${game_id.slice(6)}`;
-// 	// Create a 1-minute test
-// 	const game = await WinGame.create({
-// 		game_id: game_id,
-// 		time: 300, // 3 minute
-// 		game_type: '5m',
-// 		game_title: game_title,
-// 		start_time: Date.now(),
-// 		buttons: buttons,
-// 	});
-// 	console.log('');
-// 	console.log(colors.cyan('Created Game 5m', game.game_title));
-// 	console.log('');
-// 	const ioData = {
-// 		id: game._id,
-// 		game_id: game.game_id,
-// 		time: game.time,
-// 	};
-// 	global.io.to('test-room').emit('game-5m', ioData);
-// 	await countdown(game);
-// };
+const function5Minutes = async () => {
+	// find today all 5 minute games
+	const today = new Date();
+	const allGame = await WinGame.find({
+		createdAt: {
+			$gte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+			$lte: new Date(
+				today.getFullYear(),
+				today.getMonth(),
+				today.getDate() + 1
+			),
+		},
+		time: 300,
+	});
+	const game_id =
+		generateUniqueId() + allGame.length.toString().padStart(2, '0');
+	const game_title = `Game5m-${game_id.slice(6)}`;
+	// Create a 1-minute test
+	const game = await WinGame.create({
+		game_id: game_id,
+		time: 300, // 3 minute
+		game_type: '5m',
+		game_title: game_title,
+		start_time: Date.now(),
+		buttons: buttons,
+	});
+	console.log('');
+	console.log(colors.cyan('Created Game 5m', game.game_title));
+	console.log('');
+	const ioData = {
+		id: game._id,
+		game_id: game.game_id,
+		time: game.time,
+	};
+	global.io.to('test-room').emit('game-5m', ioData);
+	await countdown(game);
+};
 
 const updateGame = async (id) => {
 	// find admin winner by game_id
@@ -416,9 +416,9 @@ const updateGame = async (id) => {
 };
 
 if (process.env.GAME_ON === 'True') {
-	// setInterval(function1Minute, 65000); // Every 1 minute
+	setInterval(function1Minute, 65000); // Every 1 minute
 	setInterval(function3Minutes, 185000); // Every 3 minutes
-	// setInterval(function5Minutes, 305000); // Every 5 minutes
+	setInterval(function5Minutes, 305000); // Every 5 minutes
 }
 
 // get all win games
