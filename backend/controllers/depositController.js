@@ -10,6 +10,7 @@ const cloudinary = require('cloudinary');
 const Company = require('../models/companyModel');
 const companyId = process.env.COMPANY_ID;
 const mongoose = require('mongoose');
+const depositTemplate = require('../utils/templateD');
 
 // Create a new deposit
 exports.createDeposit = catchAsyncErrors(async (req, res, next) => {
@@ -72,6 +73,7 @@ exports.createDeposit = catchAsyncErrors(async (req, res, next) => {
 	const adminNotification = await AdminNotification.create({
 		subject: 'New Deposit Request',
 		subject_id: newDeposit._id,
+		type: 'deposit',
 		username: user.name,
 		message: `New deposit request of ${amount} from ${user.name}`,
 		url: `/deposit/${newDeposit._id}`,
@@ -79,19 +81,6 @@ exports.createDeposit = catchAsyncErrors(async (req, res, next) => {
 
 	global.io.emit('notification', adminNotification);
 
-	// send email to user
-	sendEmail({
-		email: user.email,
-		subject: 'Deposit Request',
-		message: `Dear ${user.name},\n\nYour deposit request of ${amount} has been received. We will confirm your deposit within 24 hours.\n\nThank you for choosing ${company.name}.`,
-	});
-
-	// send email to admin
-	sendEmail({
-		email: company.email,
-		subject: 'New Deposit Request',
-		message: `Dear Admin,\n\nA new deposit request of ${amount} has been received from ${user.name}.\n\nThank you for choosing ${company.name}.`,
-	});
 	res.status(201).json({
 		success: true,
 		message: 'Deposit request received successfully',
@@ -150,7 +139,7 @@ exports.updateDeposit = catchAsyncErrors(async (req, res, next) => {
 exports.getUserDeposits = catchAsyncErrors(async (req, res, next) => {
 	const deposits = await Deposit.find({
 		user_id: req.user._id,
-		is_rejected: false,
+		is_approved: true,
 	}).sort({ createdAt: -1 });
 	res.status(200).json({
 		success: true,
@@ -214,6 +203,16 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	const deposit = await Deposit.findById(req.params.id);
 	if (!deposit) {
 		return next(new ErrorHandler('No deposit found with that ID', 404));
+	}
+
+	// check if deposit is already approved
+	if (deposit.status === 'approved') {
+		return next(new ErrorHandler('Deposit already approved', 400));
+	}
+
+	// check if deposit is already rejected
+	if (deposit.status === 'rejected') {
+		return next(new ErrorHandler('Deposit already rejected', 400));
 	}
 
 	// find user
@@ -324,21 +323,20 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	company.cost.total_cost += totalCost;
 	await company.save();
 
-	console.log('totalCost', totalCost);
+	const html = depositTemplate(
+		user.name,
+		deposit.amount,
+		user.m_balance,
+		deposit._id
+	);
 
 	// send email to user
 	sendEmail({
 		email: user.email,
 		subject: 'Deposit Approved',
-		message: `Dear ${user.name},\n\nYour deposit of ${deposit.amount} has been approved.\n\nThank you for choosing ${company.name}.`,
+		html,
 	});
 
-	// send email to admin
-	sendEmail({
-		email: company.email,
-		subject: 'Deposit Approved',
-		message: `Dear ${admin.name},\n\n${user.name} deposit of ${deposit.amount} has been approved.\n\nThank you for choosing ${company.name}.`,
-	});
 	res.status(200).json({
 		success: true,
 		message: 'Deposit approved',

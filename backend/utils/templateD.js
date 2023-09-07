@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+module.exports = function depositTemplate(name, amount, balance, tnx_id) {
+	return `
 <html>
 	<head>
 		<style>
@@ -69,14 +70,22 @@
 			<div class="content">
 				<h2>Glomax Transaction</h2>
 				<p>Hello ${name},</p>
-				<h3>Withdraw Successfully</h3>
+				<h3>Your Deposit Successful</h3>
 				<p>
-					You have successfully requested to withdraw
-					<span style="color: #f9c405"> ${amount}</span> from your account.<br />
-					Your Transaction ID is
-					<span style="color: #f9c405"> ${tnx_id} </span><br />
-					Your withdrawal request will be processed please wait while we
-					process.
+					You have received an amount
+					<span style="color: #f9c405">
+						${amount} 
+					</span> USDT. Your current balance is
+					<span style="color: #f9c405">
+						${balance}
+					</span> USDT. Your transaction id is
+					<span style="color: #f9c405"> ${tnx_id} </span>.
+					<br />
+					<br />Please visit
+					<a href="https://www.glomax.org/"
+						><span style="color: #f9c405">website</span></a
+					>
+					for more information.
 				</p>
 
 				<div
@@ -85,7 +94,7 @@
 						color: #000;
 						text-align: center;
 						padding: 10px;
-						width: 40%;
+						width: 75%;
 						height: 30px;
 						border-radius: 5px;
 						display: flex;
@@ -116,13 +125,13 @@
 			<div class="footer">
 				<p>
 					Risk warning: Cryptocurrency trading is subject to high market risk.
-					Glomax will make the best efforts to choose high-quality coins, but
+					Globax will make the best efforts to choose high-quality coins, but
 					will not be responsible for your trading losses. Please trade with
 					caution.
 				</p>
 				<p>
 					Kindly note: Please be aware of phishing sites and always make sure
-					you are visiting the official glomax.vercel.app website when entering
+					you are visiting the official Globax.org website when entering
 					sensitive data.
 				</p>
 				<p style="text-align: center">
@@ -135,4 +144,5 @@
 			</div>
 		</div>
 	</body>
-</html>
+</html>`;
+};

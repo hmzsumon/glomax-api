@@ -8,6 +8,9 @@ const adminNotificationSchema = new mongoose.Schema(
 		subject_id: {
 			type: String,
 		},
+		type: {
+			type: String,
+		},
 		message: {
 			type: String,
 		},

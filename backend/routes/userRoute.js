@@ -61,7 +61,7 @@ router.route('/create-password').post(createPassword);
 router.route('/login').post(loginUser);
 
 // logout user
-router.route('/logout/:email').post(logout);
+router.route('/logout/:email').post(isAuthenticatedUser, logout);
 
 // get my team
 router.route('/my-team/:id').get(getTeam);

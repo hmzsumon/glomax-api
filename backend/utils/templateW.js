@@ -1,5 +1,7 @@
-<!DOCTYPE html>
+module.exports = function withdrawTemplate1(name, amount, tnx_id) {
+	return `
 <html>
+
 	<head>
 		<style>
 			body {
@@ -69,12 +71,14 @@
 			<div class="content">
 				<h2>Glomax Transaction</h2>
 				<p>Hello ${name},</p>
-				<h3>Withdraw Successfully</h3>
+				<h3>Withdraw Request Successfully</h3>
 				<p>
 					You have successfully requested to withdraw
 					<span style="color: #f9c405"> ${amount}</span> from your account.<br />
 					Your Transaction ID is
-					<span style="color: #f9c405"> ${tnx_id} </span><br />
+					<span style="color: #f9c405">
+                        ${tnx_id}
+                    </span><br />
 					Your withdrawal request will be processed please wait while we
 					process.
 				</p>
@@ -122,7 +126,7 @@
 				</p>
 				<p>
 					Kindly note: Please be aware of phishing sites and always make sure
-					you are visiting the official glomax.vercel.app website when entering
+					you are visiting the official  glomax.vercel.app website when entering
 					sensitive data.
 				</p>
 				<p style="text-align: center">
@@ -135,4 +139,5 @@
 			</div>
 		</div>
 	</body>
-</html>
+</html>`;
+};

@@ -16,9 +16,7 @@ const router = express.Router();
 const upload = multer({});
 
 // Create new withdraw request => /api/v1/withdraw/new
-router
-	.route('/new/withdraw')
-	.post(upload.none(), isAuthenticatedUser, newWithdrawRequest);
+router.route('/new/withdraw').post(isAuthenticatedUser, newWithdrawRequest);
 
 // Get my withdraws => /api/v1/withdraw/mywithdraws
 router.route('/my-withdraws').get(isAuthenticatedUser, myWithdraws);
@@ -53,11 +51,6 @@ router
 // Cancel withdraw request => /api/v1/admin/withdraw/:id/cancel
 router
 	.route('/withdraw/cancel')
-	.put(
-		upload.none(),
-		isAuthenticatedUser,
-		authorizeRoles('admin', 'manager'),
-		cancelWithdraw
-	);
+	.put(isAuthenticatedUser, authorizeRoles('admin', 'manager'), cancelWithdraw);
 
 module.exports = router;

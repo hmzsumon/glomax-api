@@ -15,10 +15,7 @@ const withdrawDetailsSchema = new mongoose.Schema(
 			type: String,
 			require: true,
 		},
-		w_balance: {
-			type: Number,
-			default: 0,
-		},
+
 		total_withdraw: {
 			type: Number,
 			default: 0,

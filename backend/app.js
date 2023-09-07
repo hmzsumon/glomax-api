@@ -33,6 +33,7 @@ const aiRobot = require('./routes/aiRobotRoute');
 const deposit = require('./routes/depositRoute');
 const notification = require('./routes/notificationRoute');
 const adminWinner = require('./routes/adminWinnerRoute');
+const withdraw = require('./routes/withdrawRoute');
 
 // Middleware for Errors
 app.use('/api/v1', company);
@@ -44,6 +45,7 @@ app.use('/api/v1', aiRobot);
 app.use('/api/v1', deposit);
 app.use('/api/v1', notification);
 app.use('/api/v1', adminWinner);
+app.use('/api/v1', withdraw);
 
 // app.get('/', (req, res) => {
 // 	res.sendFile(path.join(__dirname, 'index.html'));

@@ -11,7 +11,6 @@ const sendEmail = async (option) => {
 		const sendSmtpEmail = new Sib.SendSmtpEmail();
 		sendSmtpEmail.subject = option.subject;
 		sendSmtpEmail.htmlContent = option.html;
-		sendSmtpEmail.textContent = option.message;
 		sendSmtpEmail.sender = {
 			name: 'Glomax',
 			email: 'glomaxservice24@gmail.com',

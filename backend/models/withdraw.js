@@ -9,6 +9,10 @@ const withdrawSchema = new mongoose.Schema(
 			ref: 'User',
 			require: true,
 		},
+		customer_id: {
+			type: String,
+			require: true,
+		},
 		email: {
 			type: String,
 			require: true,
@@ -36,7 +40,13 @@ const withdrawSchema = new mongoose.Schema(
 			name: {
 				type: String,
 			},
-			number: {
+			network: {
+				type: String,
+			},
+			address: {
+				type: String,
+			},
+			pay_id: {
 				type: String,
 			},
 		},
@@ -96,8 +106,15 @@ const withdrawSchema = new mongoose.Schema(
 		approved_method: {
 			name: {
 				type: String,
+				default: 'binance',
 			},
-			number: {
+			network: {
+				type: String,
+			},
+			address: {
+				type: String,
+			},
+			pay_id: {
 				type: String,
 			},
 			tnx_id: {

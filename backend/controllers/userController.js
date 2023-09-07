@@ -18,6 +18,7 @@ const ip = require('ip');
 const Mining = require('../models/miningModel');
 const PlayDetails = require('../models/playDetails');
 const registrationTemplate = require('../utils/templateR');
+const securityTemplate = require('../utils/templateS');
 const Company = require('../models/companyModel');
 const companyId = process.env.COMPANY_ID;
 
@@ -515,13 +516,16 @@ exports.resendEmailVerification = catchAsyncErrors(async (req, res, next) => {
 
 	// update user
 	user.verify_code = verify_code;
+
 	await user.save();
+
+	const html = securityTemplate(user.name, verify_code);
 
 	// send verify code to user email
 	sendEmail({
 		email: user.email,
-		subject: 'Rapid Win Verification Code',
-		message: `Dear ${user.name},\n\nYour verification code is ${verify_code}.\n\nThanks,\nRapid Win Team`,
+		subject: 'Glomax Verification Code',
+		html: html,
 	}); // send email
 
 	res.status(200).json({
@@ -812,7 +816,7 @@ exports.adminLogin = catchAsyncErrors(async (req, res, next) => {
 // Logout User
 //======================================
 exports.logout = catchAsyncErrors(async (req, res, next) => {
-	const user = await User.findOne({ email: req.body.email });
+	const user = req.user;
 	if (!user) {
 		return next(new ErrorHandler('User not found', 404));
 	}
