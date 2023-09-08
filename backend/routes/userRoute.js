@@ -23,6 +23,7 @@ const {
 	updateFullName,
 	adminLogin,
 	getUserDetails,
+	getTransactions,
 } = require('../controllers/userController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -64,7 +65,7 @@ router.route('/login').post(loginUser);
 router.route('/logout/:email').post(isAuthenticatedUser, logout);
 
 // get my team
-router.route('/my-team/:id').get(getTeam);
+router.route('/my-team/:id').get(isAuthenticatedUser, getTeam);
 
 // resend email verification
 router.route('/resend-email-verification').post(resendEmailVerification);
@@ -113,5 +114,8 @@ router.route('/admin-login').post(adminLogin);
 router
 	.route('/admin/user/:id')
 	.get(isAuthenticatedUser, authorizeRoles('admin'), getUserDetails);
+
+// get transactions
+router.route('/transactions').get(isAuthenticatedUser, getTransactions);
 
 module.exports = router;

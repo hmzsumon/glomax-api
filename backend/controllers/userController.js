@@ -1,4 +1,5 @@
 const ErrorHandler = require('../utils/errorhandler');
+const Transaction = require('../models/transaction');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const User = require('../models/userModel');
 const WithdrawDetails = require('../models/withdrawDetailsModel');
@@ -1259,7 +1260,7 @@ exports.getSingleUserAdmin = catchAsyncErrors(async (req, res, next) => {
 
 // get logged in user team
 exports.getTeam = catchAsyncErrors(async (req, res, next) => {
-	const user = await User.findById(req.params.id);
+	const user = req.user;
 	if (!user) {
 		return next(new ErrorHandler('User not found', 404));
 	}
@@ -1285,9 +1286,7 @@ exports.getTeam = catchAsyncErrors(async (req, res, next) => {
 	let level = 1;
 	for (let i = 0; i < allMembers.length; i++) {
 		const member = allMembers[i];
-		const mining = await Mining.findOne({ user_id: member._id }).select(
-			'is_start'
-		);
+		// console.log(member);
 
 		// Define the level
 		if (level_1.includes(member)) {
@@ -1308,7 +1307,8 @@ exports.getTeam = catchAsyncErrors(async (req, res, next) => {
 			kyc_verified: member.kyc_verified,
 			is_mining: member.is_mining,
 			customer_id: member.customer_id,
-			is_start: mining.is_start,
+			total_withdraw: member.total_withdraw,
+			total_deposit: member.total_deposit,
 			level,
 		});
 	}
@@ -1529,5 +1529,23 @@ exports.updateFullName = catchAsyncErrors(async (req, res, next) => {
 	res.status(200).json({
 		success: true,
 		message: 'Full name updated successfully',
+	});
+});
+
+// get logged in user transactions
+exports.getTransactions = catchAsyncErrors(async (req, res, next) => {
+	const user = await User.findById(req.user._id);
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
+
+	// find transactions
+	const transactions = await Transaction.find({ user_id: user._id }).sort({
+		createdAt: -1,
+	});
+
+	res.status(200).json({
+		success: true,
+		transactions,
 	});
 });

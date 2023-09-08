@@ -126,7 +126,7 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 		'cashIn',
 		trade_charge * 0.3,
 		'trade_commission',
-		`Trade Commission from ${user.username}`
+		`1st level Trade Commission from ${user.username}`
 	);
 	await parent_1.save();
 
@@ -138,7 +138,7 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 		'cashIn',
 		trade_charge * 0.2,
 		'trade_commission',
-		`Trade Commission from ${user.username}`
+		`2nd level Trade Commission from ${user.username}`
 	);
 
 	await parent_2.save();
@@ -151,7 +151,7 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 		'cashIn',
 		trade_charge * 0.1,
 		'trade_commission',
-		`Trade Commission from ${user.username}`
+		`3rd level Trade Commission from ${user.username}`
 	);
 	await parent_3.save();
 

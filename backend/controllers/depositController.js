@@ -245,14 +245,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 
 	// update user
 	user.m_balance += deposit.amount;
-	createTransaction(
-		user._id,
-		'cashIn',
-		deposit.amount,
-		'deposit',
-		'Approved Deposit'
-	);
-
+	user.total_deposit += deposit.amount;
 	let totalCost = 0;
 
 	if (deposit.amount >= 50 && deposit.is_bonus === true) {

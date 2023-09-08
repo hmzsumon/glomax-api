@@ -274,6 +274,7 @@ exports.approveWithdraw = catchAsyncErrors(async (req, res, next) => {
 
 	// update user balance
 	user.is_withdraw_requested = false;
+	user.total_withdraw += withdraw.amount;
 	await user.save();
 
 	// update withdraw details

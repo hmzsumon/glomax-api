@@ -101,6 +101,18 @@ const userSchema = new mongoose.Schema(
 			default: 0,
 		},
 
+		// total deposit
+		total_deposit: {
+			type: Number,
+			default: 0,
+		},
+
+		// total withdraw
+		total_withdraw: {
+			type: Number,
+			default: 0,
+		},
+
 		// rebate
 		trade_com: {
 			level_1: {

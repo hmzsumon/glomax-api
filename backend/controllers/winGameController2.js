@@ -477,13 +477,13 @@ exports.winGameCreateTrade = catchAsyncErrors(async (req, res, next) => {
 		customer_id,
 		colors,
 		amount,
-		bet_id,
+		username,
 		game_id,
 		game_type,
 		multiplier,
 		value,
 	} = req.body;
-
+	console.log('req.body', req.body);
 	if (!user_id) {
 		return next(new ErrorHandler('Please provide user id', 400));
 	} else if (!name) {
@@ -625,7 +625,7 @@ exports.winGameCreateTrade = catchAsyncErrors(async (req, res, next) => {
 		'cashIn',
 		trade_charge * 0.3,
 		'trade_commission',
-		`Trade Commission from ${user.username}`
+		`1st Level Trade Commission from ${username}`
 	);
 	await parent_1.save();
 
@@ -637,8 +637,9 @@ exports.winGameCreateTrade = catchAsyncErrors(async (req, res, next) => {
 		'cashIn',
 		trade_charge * 0.2,
 		'trade_commission',
-		`Trade Commission from ${user.username}`
+		`2nd level Trade Commission from ${username}`
 	);
+	console.log('parent_2', username, trade_charge * 0.2);
 
 	await parent_2.save();
 
@@ -650,7 +651,7 @@ exports.winGameCreateTrade = catchAsyncErrors(async (req, res, next) => {
 		'cashIn',
 		trade_charge * 0.1,
 		'trade_commission',
-		`Trade Commission from ${user.username}`
+		`3rd level Trade Commission from ${username}`
 	);
 	await parent_3.save();
 
