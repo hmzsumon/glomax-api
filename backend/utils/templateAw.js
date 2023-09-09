@@ -98,18 +98,18 @@ module.exports = function withdrawTemplate2(name, amount, tnx_id) {
 					"
 				>
 					<a
-						href="https://www.glomax.org/view-transaction?transaction_id=[TRANSACTION_ID]"
+						href="https://www.glomax.vercel.app/view-transaction?transaction_id=[TRANSACTION_ID]"
 						style="color: white"
 						>View Transaction History</a
 					>
 				</div>
 				<p>
 					Don't recognize this activity? Please
-					<a href="https://www.glomax.org/"
+					<a href="https://www.glomax.vercel.app/"
 						><span style="color: #f9c405">reset</span></a
 					>
 					your password and contact your
-					<a href="https://www.glomax.org/"
+					<a href="https://www.glomax.vercel.app/"
 						><span style="color: #f9c405">customer support</span></a
 					>
 					immediately.

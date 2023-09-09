@@ -96,7 +96,7 @@ module.exports = function securityTemplate(name, code) {
 				</p>
 				<p>
 					Kindly note: Please be aware of phishing sites and always make sure
-					you are visiting the official Glomax.org website when entering
+					you are visiting the official glomax.vercel.app website when entering
 					sensitive data.
 				</p>
 				<p style="text-align: center">

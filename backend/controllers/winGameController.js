@@ -70,159 +70,91 @@ const buttons = [
 	},
 ];
 
+const GAME_TIMES = {
+	ONE_MINUTE: 60,
+	THREE_MINUTES: 180,
+	FIVE_MINUTES: 300,
+};
+
+const getTodayGames = async (duration) => {
+	const today = new Date();
+	return await WinGame.find({
+		createdAt: {
+			$gte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+			$lte: new Date(
+				today.getFullYear(),
+				today.getMonth(),
+				today.getDate() + 1
+			),
+		},
+		time: duration,
+	});
+};
+
+const createGame = async (duration, gameTypePrefix) => {
+	const allGame = await getTodayGames(duration);
+	const game_id =
+		generateUniqueId() + allGame.length.toString().padStart(2, '0');
+	const game_title = `${gameTypePrefix}-${game_id.slice(6)}`;
+
+	const game = await WinGame.create({
+		game_id: game_id,
+		time: duration,
+		game_type: gameTypePrefix.toLowerCase(),
+		game_title: game_title,
+		start_time: Date.now(),
+		buttons: buttons,
+	});
+
+	console.log(`\nCreated ${gameTypePrefix} ${game.game_title}\n`);
+
+	const ioData = {
+		id: game._id,
+		game_id: game.game_id,
+		time: game.time,
+	};
+
+	global.io
+		.to('test-room')
+		.emit(`game-${gameTypePrefix.toLowerCase()}`, ioData);
+
+	await countdown(game);
+};
+
 async function countdown(game) {
 	let seconds = game.time;
-
 	const interval = setInterval(async () => {
 		seconds--;
 
-		if (game.game_type === '1m') {
-			const ioData = {
-				id: game._id,
-				game_id: game.game_id,
-				time: seconds,
-			};
-			global.io.to('test-room').emit('game-1m', ioData);
-		} else if (game.game_type === '3m') {
-			const ioData = {
-				id: game._id,
-				game_id: game.game_id,
-				time: seconds,
-			};
-			global.io.to('test-room').emit('game-3m', ioData);
-		} else if (game.game_type === '5m') {
-			const ioData = {
-				id: game._id,
-				game_id: game.game_id,
-				time: seconds,
-			};
-			global.io.to('test-room').emit('game-5m', ioData);
-		}
+		const ioData = {
+			id: game._id,
+			game_id: game.game_id,
+			time: seconds,
+		};
+		global.io.to('game-room').emit(`game-${game.game_type}`, ioData);
 
 		if (seconds === 0) {
 			clearInterval(interval); // Stop the interval when the countdown is finished
 			await updateGame(game._id);
-			console.log(colors.green('Game finished', game.game_title));
+			console.log(`Game finished ${game.game_title}`);
+
+			// After the game is finished, wait for 15 seconds and then create a new game
+			setTimeout(() => {
+				switch (game.time) {
+					case GAME_TIMES.ONE_MINUTE:
+						createGame(GAME_TIMES.ONE_MINUTE, '1m');
+						break;
+					case GAME_TIMES.THREE_MINUTES:
+						createGame(GAME_TIMES.THREE_MINUTES, '3m');
+						break;
+					case GAME_TIMES.FIVE_MINUTES:
+						createGame(GAME_TIMES.FIVE_MINUTES, '5m');
+						break;
+				}
+			}, 15000); // Wait for 15 seconds
 		}
 	}, 1000); // Interval of 1 second
 }
-
-// game 1 minute
-const function1Minute = async () => {
-	// find today all 1 minute games
-	const today = new Date();
-	const allGame = await WinGame.find({
-		createdAt: {
-			$gte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
-			$lte: new Date(
-				today.getFullYear(),
-				today.getMonth(),
-				today.getDate() + 1
-			),
-		},
-		time: 60,
-	});
-	const game_id =
-		generateUniqueId() + allGame.length.toString().padStart(2, '0');
-	const game_title = `Game1m-${game_id.slice(6)}`;
-	// Create a 1-minute test
-	const game = await WinGame.create({
-		game_id: game_id,
-		time: 60, // 1 minute
-		game_type: '1m',
-		game_title: game_title,
-		start_time: Date.now(),
-		buttons: buttons,
-	});
-	console.log('');
-	console.log(colors.green('Created Game 1m', game.game_title));
-	console.log('');
-	const ioData = {
-		id: game._id,
-		game_id: game.game_id,
-		time: game.time,
-	};
-	global.io.to('test-room').emit('game-1m', ioData);
-	await countdown(game);
-};
-
-// game 3 minute
-const function3Minutes = async () => {
-	// find today all 3 minute games
-	const today = new Date();
-	const allGame = await WinGame.find({
-		createdAt: {
-			$gte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
-			$lte: new Date(
-				today.getFullYear(),
-				today.getMonth(),
-				today.getDate() + 1
-			),
-		},
-		time: 180,
-	});
-	const game_id =
-		generateUniqueId() + allGame.length.toString().padStart(2, '0');
-	const game_title = `Game3m-${game_id.slice(6)}`;
-	// Create a 1-minute test
-	const game = await WinGame.create({
-		game_id: game_id,
-		time: 180, // 3 minute
-		game_type: '3m',
-		game_title: game_title,
-		start_time: Date.now(),
-		buttons: buttons,
-	});
-	console.log('');
-	console.log(colors.yellow('Created Game', game.game_title));
-	console.log('');
-	const ioData = {
-		id: game._id,
-		game_id: game.game_id,
-		time: game.time,
-	};
-	global.io.to('test-room').emit('game-3m', ioData);
-	await countdown(game);
-};
-
-// // game 5 minute
-const function5Minutes = async () => {
-	// find today all 5 minute games
-	const today = new Date();
-	const allGame = await WinGame.find({
-		createdAt: {
-			$gte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
-			$lte: new Date(
-				today.getFullYear(),
-				today.getMonth(),
-				today.getDate() + 1
-			),
-		},
-		time: 300,
-	});
-	const game_id =
-		generateUniqueId() + allGame.length.toString().padStart(2, '0');
-	const game_title = `Game5m-${game_id.slice(6)}`;
-	// Create a 1-minute test
-	const game = await WinGame.create({
-		game_id: game_id,
-		time: 300, // 3 minute
-		game_type: '5m',
-		game_title: game_title,
-		start_time: Date.now(),
-		buttons: buttons,
-	});
-	console.log('');
-	console.log(colors.cyan('Created Game 5m', game.game_title));
-	console.log('');
-	const ioData = {
-		id: game._id,
-		game_id: game.game_id,
-		time: game.time,
-	};
-	global.io.to('test-room').emit('game-5m', ioData);
-	await countdown(game);
-};
 
 const updateGame = async (id) => {
 	// find admin winner by game_id
@@ -416,9 +348,9 @@ const updateGame = async (id) => {
 };
 
 if (process.env.GAME_ON === 'True') {
-	setInterval(function1Minute, 65000); // Every 1 minute
-	setInterval(function3Minutes, 185000); // Every 3 minutes
-	setInterval(function5Minutes, 305000); // Every 5 minutes
+	createGame(GAME_TIMES.ONE_MINUTE, '1m');
+	createGame(GAME_TIMES.THREE_MINUTES, '3m');
+	createGame(GAME_TIMES.FIVE_MINUTES, '5m');
 }
 
 // get all win games

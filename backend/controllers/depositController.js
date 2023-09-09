@@ -401,13 +401,6 @@ exports.rejectDeposit = catchAsyncErrors(async (req, res, next) => {
 		message: `Dear ${user.name},\n\nYour deposit of ${deposit.amount} has been rejected.\n\nReason: ${req.body.reason}\n\nThank you for choosing ${company.name}.`,
 	});
 
-	// send email to admin
-	sendEmail({
-		email: company.email,
-		subject: 'Deposit Rejected',
-		message: `Dear ${admin.name},\n\n${user.name} deposit of ${deposit.amount} has been rejected.\n\nReason: ${req.body.reason}\n\nThank you for choosing ${company.name}.`,
-	});
-
 	res.status(200).json({
 		success: true,
 		message: 'Deposit rejected',

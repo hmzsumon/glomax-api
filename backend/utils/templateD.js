@@ -82,7 +82,7 @@ module.exports = function depositTemplate(name, amount, balance, tnx_id) {
 					<span style="color: #f9c405"> ${tnx_id} </span>.
 					<br />
 					<br />Please visit
-					<a href="https://www.glomax.org/"
+					<a href="https://www.glomax.vercel.app/"
 						><span style="color: #f9c405">website</span></a
 					>
 					for more information.
@@ -104,18 +104,18 @@ module.exports = function depositTemplate(name, amount, balance, tnx_id) {
 					"
 				>
 					<a
-						href="https://www.glomax.org/view-transaction?transaction_id=[TRANSACTION_ID]"
+						href="https://www.glomax.vercel.app/view-transaction?transaction_id=[TRANSACTION_ID]"
 						style="color: white"
 						>View Transaction History</a
 					>
 				</div>
 				<p>
 					Don't recognize this activity? Please
-					<a href="https://www.glomax.org/"
+					<a href="https://www.glomax.vercel.app/"
 						><span style="color: #f9c405">reset</span></a
 					>
 					your password and contact your
-					<a href="https://www.glomax.org/"
+					<a href="https://www.glomax.vercel.app/"
 						><span style="color: #f9c405">customer support</span></a
 					>
 					immediately.
@@ -125,13 +125,13 @@ module.exports = function depositTemplate(name, amount, balance, tnx_id) {
 			<div class="footer">
 				<p>
 					Risk warning: Cryptocurrency trading is subject to high market risk.
-					Globax will make the best efforts to choose high-quality coins, but
+					Glomax will make the best efforts to choose high-quality coins, but
 					will not be responsible for your trading losses. Please trade with
 					caution.
 				</p>
 				<p>
 					Kindly note: Please be aware of phishing sites and always make sure
-					you are visiting the official Globax.org website when entering
+					you are visiting the official glomax.vercel.app website when entering
 					sensitive data.
 				</p>
 				<p style="text-align: center">

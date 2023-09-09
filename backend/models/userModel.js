@@ -156,6 +156,10 @@ const userSchema = new mongoose.Schema(
 			type: Number,
 			default: 0,
 		},
+		is_send: {
+			type: Boolean,
+			default: false,
+		},
 		referral_code: {
 			type: String,
 		},

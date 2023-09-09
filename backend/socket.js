@@ -1,5 +1,3 @@
-// socket.js
-
 const http = require('http');
 const io = require('socket.io');
 
@@ -16,13 +14,7 @@ const socketIO = io(socketServer, {
 socketIO.on('connection', (socket) => {
 	console.log('A user connected');
 
-	// Handle custom events
-	socket.on('chat message', (message) => {
-		console.log('Received message:', message);
-		// Broadcast the message to all connected clients
-		socketIO.emit('chat message', message);
-	});
-	socket.join('test-room');
+	socket.join('game-room');
 
 	// Handle disconnection
 	socket.on('disconnect', () => {
