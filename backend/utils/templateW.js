@@ -120,8 +120,7 @@ module.exports = function withdrawTemplate1(name, amount, tnx_id) {
 			<div class="footer">
 				<p>
 					Risk warning: Cryptocurrency trading is subject to high market risk.
-					Glomax will make the best efforts to choose high-quality coins, but
-					will not be responsible for your trading losses. Please trade with
+					Glomax will make the best efforts to choose high-quality coins. Please trade with
 					caution.
 				</p>
 				<p>

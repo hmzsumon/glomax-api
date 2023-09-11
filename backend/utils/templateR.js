@@ -74,7 +74,11 @@ module.exports = function registrationTemplate(name, code) {
             <p style="color: white;">Once you’ve entered the code, you can reset your password and access your account.</p>
         </div>
         <div class="footer">
-          <p>Risk warning: Cryptocurrency trading is subject to high market risk. Glomax will make the best efforts to choose high-quality coins, but will not be responsible for your trading losses. Please trade with caution.</p>
+          <p>
+					Risk warning: Cryptocurrency trading is subject to high market risk.
+					Glomax will make the best efforts to choose high-quality coins. Please trade with
+					caution.
+				</p>
           <p>Kindly note: Please be aware of phishing sites and always make sure you are visiting the official glomax.vercel.app website when entering sensitive data.</p>
           <p style="text-align: center;">&copy; 2023 <a href="https://www.glomax.vercel.app/"><span style="color: #f9c405;">glomax.vercel.app</span></a>, All Rights Reserved.</p>
       </div>

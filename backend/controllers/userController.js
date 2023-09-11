@@ -70,12 +70,12 @@ function generateUniqueId() {
 exports.seedUser = catchAsyncErrors(async (req, res, next) => {
 	// create user
 	const user = await User.create({
-		name: 'Rw Master',
-		username: 'rwmaster',
+		name: 'Glomax Master',
+		username: 'glomaxmaster',
 		email: 'wfcuser2023@gmail.com',
-		phone: '01757454531',
+		phone: '+15854044409',
 		customer_id: generateUniqueId().substring(0, 9),
-		password: 'S123456@',
+		password: 'Assad@1564',
 		role: 'user',
 		email_verified: true,
 		is_active: true,
