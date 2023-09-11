@@ -247,24 +247,29 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	user.m_balance += deposit.amount;
 	user.total_deposit += deposit.amount;
 	let totalCost = 0;
+	let mainBalance = deposit.amount;
 
 	if (deposit.amount >= 50 && deposit.is_bonus === true) {
-		user.b_balance += deposit.amount * 0.1;
-		user.m_balance += deposit.amount * 0.1;
-		user.trading_volume += deposit.amount * 0.1 * 5;
-		console.log('trading_volume', deposit.amount * 0.1 * 5);
+		user.b_balance += deposit.amount * 0.05;
+		user.m_balance += deposit.amount * 0.05;
+		user.trading_volume += deposit.amount * 0.05 * 5;
+		mainBalance += deposit.amount * 0.05;
+		// console.log('trading_volume', deposit.amount * 0.1 * 5);
 		createTransaction(
 			user._id,
 			'cashIn',
-			deposit.amount * 0.1,
+			deposit.amount * 0.05,
 			'bonus',
-			'First Deposit Bonus'
+			`Bonus from Glomax ${deposit.amount * 0.05} & ${
+				deposit.amount * 0.05 * 5
+			} trading volume`
 		);
-		totalCost += deposit.amount * 0.1;
+		totalCost += deposit.amount * 0.05;
+		company.total_tarde_volume += deposit.amount * 0.05 * 5;
 	}
 
 	if (user.is_newUser) {
-		console.log('new user');
+		// console.log('new user');
 		depositDetails.first_deposit_amount += deposit.amount;
 		depositDetails.first_deposit_date = Date.now();
 		depositDetails.s_bonus += 2;
@@ -288,7 +293,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 			'cashIn',
 			2,
 			'bonus',
-			`Referral Bonus from ${user.name}`
+			`Referral Bonus from Glomax by ${user.name}`
 		);
 		await sponsor.save();
 		totalCost += 2;
@@ -314,6 +319,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	company.deposit.total_deposit_count += 1;
 	company.deposit.total_d_bonus += totalCost;
 	company.cost.total_cost += totalCost;
+	company.total_main_balance += mainBalance;
 	await company.save();
 
 	const html = depositTemplate(

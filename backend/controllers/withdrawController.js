@@ -76,7 +76,7 @@ exports.newWithdrawRequest = catchAsyncErrors(async (req, res, next) => {
 		'cashOut',
 		numAmount,
 		'withdraw',
-		`Withdraw of ${numAmount}`
+		`Withdraw request for ${numAmount} was created`
 	);
 	user.is_withdraw_requested = true;
 

@@ -38,12 +38,13 @@ exports.newAiRobot = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('Company not found', 404));
 	}
 
+	const mumInvestment = Number(investment);
+
 	const newAiRobot = await AiRobot.create({
 		user_id: user._id,
 		customer_id: user.customer_id,
 		total_investment: investment,
 		current_investment: investment,
-		auto_create,
 		pair,
 		grid_no,
 		price_range,
@@ -53,11 +54,11 @@ exports.newAiRobot = catchAsyncErrors(async (req, res, next) => {
 	});
 
 	// update user balance
-	user.ai_balance -= Number(investment);
+	user.ai_balance -= mumInvestment;
 	createTransaction(
 		user._id,
 		'cashOut',
-		investment,
+		mumInvestment,
 		'aiRobot',
 		`Investment in Ai Robot`
 	);
@@ -66,14 +67,14 @@ exports.newAiRobot = catchAsyncErrors(async (req, res, next) => {
 
 	// update aiRobotRecord
 	aiRobotRecord.active_robot_id = newAiRobot._id;
-	aiRobotRecord.total_investment += Number(investment);
-	aiRobotRecord.current_investment += Number(investment);
+	aiRobotRecord.total_investment += mumInvestment;
+	aiRobotRecord.current_investment += mumInvestment;
 	aiRobotRecord.total_robot_count += 1;
 	await aiRobotRecord.save();
 
 	// update company balance
-	company.total_ai_balance -= Number(investment);
-	company.total_ai_robot_balance += Number(investment);
+	company.total_ai_balance -= mumInvestment;
+	company.total_active_ai_balance += mumInvestment;
 	await company.save();
 
 	res.status(200).json({
@@ -128,6 +129,7 @@ exports.cancelAiRobot = catchAsyncErrors(async (req, res, next) => {
 
 	// update user balance
 	user.ai_balance = user.ai_balance + refund_amount;
+	company.total_active_ai_balance -= aiRobot.current_investment;
 	createTransaction(
 		user._id,
 		'cashIn',
@@ -142,7 +144,6 @@ exports.cancelAiRobot = catchAsyncErrors(async (req, res, next) => {
 	company.total_ai_balance += refund_amount;
 	company.income.ai_robot_income += cancel_charge;
 	company.income.total_income += cancel_charge;
-	company.total_ai_robot_balance -= aiRobot.current_investment;
 	await company.save();
 
 	// update aiRobot
@@ -273,13 +274,13 @@ exports.editAiRobot = catchAsyncErrors(async (req, res, next) => {
 // cron.schedule('*/30 * * * *', async () => {});
 
 // cron job for active aiRobot every 5 minutes
-cron.schedule('*/10 * * * *', async () => {
+cron.schedule('*/15 * * * *', async () => {
 	const aiRobots = await AiRobot.find({
 		is_active: true,
 	});
 
 	// find company
-	const company = await Company.findById(companyId).select('cost income ');
+	const company = await Company.findById(companyId);
 
 	// console.log(aiRobots.length);
 	let profit = {
@@ -328,12 +329,15 @@ cron.schedule('*/10 * * * *', async () => {
 			// update user balance
 			user.ai_robot = false;
 			user.ai_balance += netProfit + aiRobot.current_investment;
+			company.total_active_ai_balance -= aiRobot.current_investment;
+			company.total_ai_balance += aiRobot.current_investment + netProfit;
+
 			createTransaction(
 				user._id,
 				'cashIn',
 				netProfit + aiRobot.current_investment,
-				'aiRobot',
-				`Profit from Ai Robot`
+				'ai_robot',
+				`Profit from Ai Robot ${netProfit} and Refund ${aiRobot.current_investment}`
 			);
 			await user.save();
 
@@ -345,7 +349,7 @@ cron.schedule('*/10 * * * *', async () => {
 				'cashIn',
 				aiRobotCharge * 0.4,
 				'commission',
-				`Commission from Ai Robot ${user.username}`
+				`1st level Commission from Ai Robot by ${user.username}`
 			);
 			await parent_1.save();
 
@@ -357,7 +361,7 @@ cron.schedule('*/10 * * * *', async () => {
 				'cashIn',
 				aiRobotCharge * 0.3,
 				'commission',
-				`Commission from Ai Robot ${user.username}`
+				`2nd level Commission from Ai Robot by ${user.username}`
 			);
 			await parent_2.save();
 
@@ -369,7 +373,7 @@ cron.schedule('*/10 * * * *', async () => {
 				'cashIn',
 				aiRobotCharge * 0.2,
 				'commission',
-				`Commission from Ai Robot ${user.username}`
+				`3rd Commission from Ai Robot by ${user.username}`
 			);
 			await parent_3.save();
 
@@ -392,7 +396,6 @@ cron.schedule('*/10 * * * *', async () => {
 			aiRobot.profit = profit_amount;
 			aiRobot.trade_charge = aiRobotCharge;
 			aiRobot.take_profit = netProfit;
-			aiRobot.processing = true;
 			await aiRobot.save();
 
 			// update company balance

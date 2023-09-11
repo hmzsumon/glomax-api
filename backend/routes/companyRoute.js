@@ -4,6 +4,7 @@ const {
 	getCompanyAdmin,
 	clearDailyWorkTodayWorkUsers,
 	restCompany,
+	allUsersBalanceInfo,
 } = require('../controllers/companyController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 const router = express.Router();
@@ -26,5 +27,10 @@ router
 router
 	.route('/admin/company/reset')
 	.put(isAuthenticatedUser, authorizeRoles('admin'), restCompany);
+
+// all users balance info
+router
+	.route('/admin/company/all-users-balance-info')
+	.get(isAuthenticatedUser, authorizeRoles('admin'), allUsersBalanceInfo);
 
 module.exports = router;

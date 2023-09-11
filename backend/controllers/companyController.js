@@ -1,8 +1,9 @@
-const ErrorHander = require('../utils/errorhandler');
+const ErrorHandler = require('../utils/errorhandler');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const User = require('../models/userModel');
 const Company = require('../models/companyModel');
 const companyId = process.env.COMPANY_ID;
+const AiRobot = require('../models/aiRobotModel');
 
 // create company
 exports.createCompany = catchAsyncErrors(async (req, res, next) => {
@@ -36,7 +37,7 @@ exports.createCompany = catchAsyncErrors(async (req, res, next) => {
 exports.getCompanyAdmin = catchAsyncErrors(async (req, res, next) => {
 	const company = await Company.findById(companyId);
 	if (!company) {
-		return next(new ErrorHander('Company not found', 404));
+		return next(new ErrorHandler('Company not found', 404));
 	}
 	res.status(200).json({
 		success: true,
@@ -49,7 +50,7 @@ exports.clearDailyWorkTodayWorkUsers = catchAsyncErrors(
 	async (req, res, next) => {
 		const company = await Company.findById(companyId);
 		if (!company) {
-			return next(new ErrorHander('No company found', 404));
+			return next(new ErrorHandler('No company found', 404));
 		}
 
 		company.update({ $set: { 'dailyWork.todayWorkUsers': [] } });
@@ -64,7 +65,7 @@ exports.clearDailyWorkTodayWorkUsers = catchAsyncErrors(
 exports.restCompany = catchAsyncErrors(async (req, res, next) => {
 	const company = await Company.findById(companyId);
 	if (!company) {
-		return next(new ErrorHander('Company not found', 400));
+		return next(new ErrorHandler('Company not found', 400));
 	}
 
 	company.users.total_users = 0;
@@ -131,5 +132,52 @@ exports.restCompany = catchAsyncErrors(async (req, res, next) => {
 	res.status(200).json({
 		success: true,
 		message: 'All properties updated',
+	});
+});
+
+// all users balance and withdraw balance and deposit balance
+exports.allUsersBalanceInfo = catchAsyncErrors(async (req, res, next) => {
+	// find all users
+	const users = await User.find();
+	if (!users) {
+		return next(new ErrorHandler('No users found', 404));
+	}
+
+	// find company
+	const company = await Company.findById(companyId);
+	if (!company) {
+		return next(new ErrorHandler('Company not found', 404));
+	}
+
+	let total_main_balance = 0;
+	let total_ai_balance = 0;
+	let total_trade_volume = 0;
+	let total_ai_active_balance = 0;
+
+	for (let i = 0; i < users.length; i++) {
+		total_main_balance += users[i].m_balance;
+		total_ai_balance += users[i].ai_balance;
+		total_trade_volume += users[i].trading_volume;
+	}
+
+	// find all active ai robots
+	const aiRobots = await AiRobot.find({ is_active: true });
+	if (!aiRobots) {
+		return next(new ErrorHandler('No ai robots found', 404));
+	}
+	for (let i = 0; i < aiRobots.length; i++) {
+		total_ai_active_balance += aiRobots[i].balance;
+	}
+
+	const balanceInfo = {
+		total_main_balance,
+		total_ai_balance,
+		total_trade_volume,
+		total_ai_active_balance,
+	};
+
+	res.status(200).json({
+		success: true,
+		balanceInfo,
 	});
 });

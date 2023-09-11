@@ -424,13 +424,18 @@ const companySchema = new Schema(
 			default: 0,
 		},
 
+		total_trade_volume: {
+			type: Number,
+			default: 0,
+		},
+
 		// total user ai balance
 		total_ai_balance: {
 			type: Number,
 			default: 0,
 		},
 
-		total_ai_robot_balance: {
+		total_active_ai_balance: {
 			type: Number,
 			default: 0,
 		},

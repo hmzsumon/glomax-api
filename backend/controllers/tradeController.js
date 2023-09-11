@@ -88,6 +88,7 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 
 	// update user balance
 	user.m_balance -= amount;
+	company.total_main_balance -= amount;
 
 	// create trade
 	const trade = await Trade.create({
@@ -104,7 +105,13 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 	});
 
 	if (user.trading_volume > 0) {
-		user.trading_volume -= amount;
+		if (amount > user.trading_volume) {
+			company.total_trade_volume -= user.trading_volume;
+			user.trading_volume = 0;
+		} else {
+			user.trading_volume -= amount;
+			company.total_trade_volume -= Number(amount);
+		}
 	}
 
 	if (user.trading_volume === 0) {
@@ -221,9 +228,7 @@ const updateTrade = async (trade, retryCount = 0) => {
 	}
 
 	// find company
-	const company = await Company.findById(companyId).select(
-		'total_trade_amount game'
-	);
+	const company = await Company.findById(companyId);
 	if (!company) {
 		console.log('Company not found');
 	}
@@ -252,8 +257,8 @@ const updateTrade = async (trade, retryCount = 0) => {
 
 	if (result === 'win') {
 		profit = trade.trade_amount * 0.85;
-		totalProfit = trade.trade_amount + profit;
-		console.log(totalProfit > globalTradeAmount);
+		totalProfit = Number(trade.trade_amount + profit);
+		// console.log(totalProfit > globalTradeAmount);
 		if (totalProfit > globalTradeAmount) {
 			result = 'loss';
 
@@ -281,7 +286,7 @@ const updateTrade = async (trade, retryCount = 0) => {
 	trade.result = result;
 	is_active = false;
 	await trade.save();
-	console.log('Updated trade', trade.close_price);
+	// console.log('Updated trade', trade.close_price);
 	// update tradeRecord
 	if (result === 'win') {
 		tradeRecord.total_profit += profit;
@@ -290,6 +295,16 @@ const updateTrade = async (trade, retryCount = 0) => {
 		company.game.game_cost += totalProfit;
 		// update user m_balance
 		user.m_balance += totalProfit;
+		console.log('totalProfit', totalProfit, typeof totalProfit);
+		company.total_main_balance += Number(totalProfit);
+
+		createTransaction(
+			user._id,
+			'cashIn',
+			totalProfit,
+			'trade_profit',
+			`Trade Profit from Glomax`
+		);
 	} else {
 		tradeRecord.total_loss += trade.amount;
 	}

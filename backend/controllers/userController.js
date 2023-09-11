@@ -282,7 +282,6 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
 		email: user.email,
 		subject: 'Glomax Verification Code',
 		html: html,
-		message: `Dear ${user.name},\n\nYour verification code is ${verify_code}.\n\nThanks,\nGlomax Team`,
 	});
 
 	res.status(201).json({
@@ -374,6 +373,7 @@ exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
 	);
 	user.signup_bonus += 2;
 	user.trading_volume += 2 * 5;
+	company.total_tarde_volume += 2 * 5;
 	await user.save();
 
 	// create withdraw details
