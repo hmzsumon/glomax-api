@@ -753,6 +753,19 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
 	}
 	// check if user is email verified
 	if (user.email_verified === false) {
+		// generate verify code
+		const verify_code = Math.floor(100000 + Math.random() * 900000);
+		// update user
+		user.verify_code = verify_code;
+		await user.save();
+		const html = securityTemplate(user.name, verify_code);
+		// send verify code to user email
+		sendEmail({
+			email: email,
+			subject: 'Glomax Verification Code',
+			html: html,
+		});
+		console.log('email not verified', email);
 		return next(new ErrorHandler('Please verify your email', 405));
 	}
 

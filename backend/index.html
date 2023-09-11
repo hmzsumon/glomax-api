@@ -1,12 +1,6 @@
-module.exports = function registrationTemplate(name, code) { console.log(name,
-code); return `
-
-<!DOCTYPE html>
-<html lang="en">
+module.exports = function withdrawTemplate2(name, amount, tnx_id) { return `
+<html>
 	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Registration Verification</title>
 		<style>
 			body {
 				font-family: Arial, sans-serif;
@@ -17,7 +11,7 @@ code); return `
 			.container {
 				max-width: 600px;
 				margin: 20px auto;
-				background-color: #ffffff;
+				background-color: #f8fafc;
 				border-radius: 15px;
 				box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 				overflow: hidden;
@@ -54,22 +48,31 @@ code); return `
 	<body>
 		<div class="container">
 			<div class="header">
-				<h1>Welcome to Glomax</h1>
+				<h1>Glomax Transaction</h1>
 			</div>
 			<div class="content">
-				<h3>Hello ${name},</h3>
+				<p>Hello ${name},</p>
+				<h3>Withdraw Successful</h3>
 				<p>
-					You're almost there! To complete your registration, please use the
-					following verification code:
+					Your withdrawal request has been successfully processed. You have
+					received amount
+					<span style="color: #166534"> ${amount}</span>USDT. Please check your
+					crypto wallet.<br />
+					Your Transaction ID is
+					<span style="color: #166534"> ${tnx_id} </span>
 				</p>
-				<p class="code">
-					<strong>${code}</strong>
-				</p>
+				<br />
+
 				<p>
-					This verification code will remain valid for 30 minutes. Please do not
-					share this code with anyone.
+					Don't recognize this activity?
+					<a href="https://glomax.vercel.app/" class="link">Reset</a> your
+					password and contact
+					<a href="https://wa.me/message/2PHVZROK6QFAP1" class="link"
+						>customer support</a
+					>
+					immediately.
 				</p>
-				<p>After entering the code, you'll be able to set up your account.</p>
+				<p>This is an automated message, please don't reply.</p>
 			</div>
 			<div class="footer">
 				<p>
@@ -77,12 +80,11 @@ code); return `
 					website before entering any sensitive information.
 				</p>
 				<p class="p2">
-					&copy; 2023 <a class="link" href="https://www.glomax.com/">Glomax</a>.
-					All Rights Reserved.
+					&copy; 2023 <a class="link" href="https://glomax.com/">Glomax</a>. All
+					Rights Reserved.
 				</p>
 			</div>
 		</div>
 	</body>
 </html>
-
 `; };

@@ -3,11 +3,10 @@ module.exports = function securityTemplate(name, code) {
 <html>
 	<head>
 		<meta charset="utf-8" />
-		<title>Your Email Template</title>
+		<title>Glomax Security Verification</title>
 		<style>
-			/* Add your CSS styles here */
 			body {
-				font-family: 'Arial', sans-serif;
+				font-family: Arial, sans-serif;
 				background-color: #f6f6f6;
 				margin: 0;
 				padding: 0;
@@ -15,98 +14,69 @@ module.exports = function securityTemplate(name, code) {
 			.container {
 				max-width: 600px;
 				margin: 20px auto;
-				background-color: #16202d;
+				background-color: #ffffff;
 				border-radius: 15px;
-				overflow: hidden;
 				box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+				overflow: hidden;
 			}
 			.header {
-				height: 100px; /* Adjust the height as needed */
-				background: url('https://glomax.vercel.app/_next/image?url=%2Frapid-logo1.png&w=256&q=75')
-					no-repeat center center;
-				background-size: auto 100px; /* Adjust the background size */
-				background-color: #0c1119;
+				background-color: #16202d;
 				color: white;
-				padding: 0;
+				padding: 15px;
 				text-align: center;
-				border-radius: 15px 15px 0 0;
 			}
 			.content {
-				padding: 10px;
-				color: white;
-			}
-			.verification-code {
-				font-size: 25px;
-				color: #fbc02d;
+				padding: 20px;
 			}
 			.footer {
-				background-color: #0c1119;
-				color: #f6f6f6;
-				padding: 20px;
-				text-align: start;
-				border-radius: 0 0 15px 15px;
+				background-color: #e6e6e6;
+				padding: 10px 20px;
 				font-size: small;
 			}
-			.welcome {
+			.code {
+				font-size: 36px;
+				color: #fbc02d;
 				text-align: center;
-				color: white;
+				margin: 15px 0;
 			}
-			.footer a {
-				color: white;
+			.link {
+				color: #1e90ff;
 				text-decoration: none;
 			}
-			.copy-button {
-				background-color: #fbc02d;
-				border: none;
-				padding: 5px 10px;
-				cursor: pointer;
-				margin-left: 10px;
-				border-radius: 4px;
+			.p2 {
+				text-align: center;
 			}
 		</style>
 	</head>
 	<body>
 		<div class="container">
 			<div class="header">
-				<!-- Logo image will be the background of this div -->
+				<h1>Glomax Security Verification</h1>
 			</div>
-			<h1 class="welcome">Glomax Security Verification</h1>
 			<div class="content">
-				<h3 style="color: white">Hello ${name},</h3>
-				<p style="color: white">You're almost there!</p>
-				<p style="color: white">Please use the following verification code to proceed:</p>
-				<div style="display: flex; align-items: center">
-					<p class="verification-code" id="verificationCode">${code}</p>
-				</div>
-				<p style="color: white">
-					The verification code will be valid for 30 minutes. Please do not
-					share this code with anyone.
+				<h3>Hello ${name},</h3>
+				<p>
+					You recently requested a security verification. Use the following
+					code:
 				</p>
-				<p style="color: white">
-					Once you’ve entered the code, you can reset your password and access
-					your account.
+				<p class="code">${code}</p>
+				<p>
+					This code is valid for 30 minutes. Please do not share it with anyone.
 				</p>
+				<p>After entering the code, you can proceed with your request.</p>
 			</div>
 			<div class="footer">
 				<p>
-					Risk warning: Cryptocurrency trading is subject to high market risk.
-					Glomax will make the best efforts to choose high-quality coins. Please trade with
-					caution.
+					For security reasons, always make sure you're on the official Glomax
+					website before entering any sensitive information.
 				</p>
-				<p>
-					Kindly note: Please be aware of phishing sites and always make sure
-					you are visiting the official glomax.vercel.app website when entering
-					sensitive data.
-				</p>
-				<p style="text-align: center">
-					&copy; 2023
-					<a href="https://glomax.vercel.app/"
-						><span style="color: #f9c405">glomax.vercel.app</span></a
-					>, All Rights Reserved.
+				<p class="p2">
+					&copy; 2023 <a class="link" href="https://www.glomax.com/">Glomax</a>.
+					All Rights Reserved.
 				</p>
 			</div>
 		</div>
-
 	</body>
-</html>`;
+</html>
+`;
 };
