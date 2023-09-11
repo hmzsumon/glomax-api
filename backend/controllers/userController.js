@@ -373,7 +373,7 @@ exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
 	);
 	user.signup_bonus += 2;
 	user.trading_volume += 2 * 5;
-	company.total_tarde_volume += 2 * 5;
+	company.total_trade_volume += 2 * 5;
 	await user.save();
 
 	// create withdraw details
