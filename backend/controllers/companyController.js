@@ -8,9 +8,9 @@ const AiRobot = require('../models/aiRobotModel');
 // create company
 exports.createCompany = catchAsyncErrors(async (req, res, next) => {
 	await Company.create({
-		name: 'Rapid Win',
-		short_name: 'rapidwin',
-		email: 'rapidwin23@gmail.com',
+		name: 'Glomax',
+		short_name: 'glomax',
+		email: 'glomaxservice24@gmail.com',
 		phone: '+1(585)404-4409',
 		address: '5151 Tomken Rd, Mississauga, ON L4W 3W4',
 		city: 'Mississauga',
