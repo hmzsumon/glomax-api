@@ -369,7 +369,7 @@ exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
 		'cashIn',
 		2,
 		'bonus',
-		`Signup bonus $2.00 from ${company.name}`
+		`Signup bonus $2.00 from Glomax`
 	);
 	user.signup_bonus += 2;
 	user.trading_volume += 2 * 5;
