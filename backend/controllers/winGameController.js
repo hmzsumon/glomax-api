@@ -93,6 +93,19 @@ const getTodayGames = async (duration) => {
 
 const createGame = async (duration, gameTypePrefix) => {
 	const allGame = await getTodayGames(duration);
+
+	// console.log(duration);
+
+	// find active game by duration if have any active game then return
+	const activeGame = await WinGame.findOne({
+		time: duration,
+		is_active: true,
+	});
+	if (activeGame) {
+		console.log(`Active ${gameTypePrefix} game found`);
+		return;
+	}
+
 	const game_id =
 		generateUniqueId() + allGame.length.toString().padStart(2, '0');
 	const game_title = `${gameTypePrefix}-${game_id.slice(6)}`;
