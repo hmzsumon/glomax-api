@@ -34,6 +34,7 @@ const deposit = require('./routes/depositRoute');
 const notification = require('./routes/notificationRoute');
 const adminWinner = require('./routes/adminWinnerRoute');
 const withdraw = require('./routes/withdrawRoute');
+const userNotification = require('./routes/userNotificationRoute');
 
 // Middleware for Errors
 app.use('/api/v1', company);
@@ -46,6 +47,7 @@ app.use('/api/v1', deposit);
 app.use('/api/v1', notification);
 app.use('/api/v1', adminWinner);
 app.use('/api/v1', withdraw);
+app.use('/api/v1', userNotification);
 
 // app.get('/', (req, res) => {
 // 	res.sendFile(path.join(__dirname, 'index.html'));

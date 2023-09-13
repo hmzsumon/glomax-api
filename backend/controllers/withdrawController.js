@@ -252,6 +252,8 @@ exports.approveWithdraw = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('Company not found', 404));
 	}
 
+	let e_address = '';
+
 	// update withdraw request
 	withdraw.is_approved = true;
 	withdraw.approved_by = admin._id;
@@ -263,12 +265,14 @@ exports.approveWithdraw = catchAsyncErrors(async (req, res, next) => {
 			network: withdraw.method.network,
 			address: req.body.tnxId,
 		};
+		e_address = withdraw.method.address;
 	}
 	if (withdraw.method.name === 'binance') {
 		withdraw.approved_method = {
 			name: withdraw.method.name,
 			pay_id: req.body.tnxId,
 		};
+		e_address = withdraw.method.pay_id;
 	}
 	await withdraw.save();
 
@@ -293,7 +297,12 @@ exports.approveWithdraw = catchAsyncErrors(async (req, res, next) => {
 	company.income.withdraw_charge += withdraw.charge;
 	await company.save();
 
-	const html = withdrawTemplate2(user.name, withdraw.amount, withdraw._id);
+	const html = withdrawTemplate2(
+		user.name,
+		withdraw.amount,
+		withdraw._id,
+		e_address
+	);
 
 	// send email to user
 	sendEmail({

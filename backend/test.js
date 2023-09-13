@@ -267,14 +267,17 @@ const cron = require('node-cron');
 // // 	console.log('Game created using cron job');
 // // });
 
-let profit = {
-	1: 0.015,
-	2: 0.016,
-	3: 0.018,
-};
+// let profit = {
+// 	1: 0.015,
+// 	2: 0.016,
+// 	3: 0.018,
+// };
 
-for (let i = 4; i <= 170; i++) {
-	profit[i] = 0.02;
-}
+// for (let i = 4; i <= 170; i++) {
+// 	profit[i] = 0.02;
+// }
 
-console.log(profit);
+// console.log(profit);
+
+const randomNum = Math.floor(Math.random() * 1000) / 1000;
+console.log(number.toFixed(3));

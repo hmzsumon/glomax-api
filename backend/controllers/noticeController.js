@@ -1,5 +1,5 @@
 const Notice = require('../models/notice');
-const ErrorHander = require('../utils/errorhander');
+const ErrorHandler = require('../utils/errorhandler');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 
 // Create Notice
@@ -19,7 +19,7 @@ exports.updateNotice = catchAsyncErrors(async (req, res, next) => {
 	let notice = await Notice.findById(req.params.id);
 
 	if (!notice) {
-		return next(new ErrorHander('No notice found with that ID', 404));
+		return next(new ErrorHandler('No notice found with that ID', 404));
 	}
 
 	notice = await Notice.findByIdAndUpdate(req.params.id, req.body, {
@@ -39,7 +39,7 @@ exports.deleteNotice = catchAsyncErrors(async (req, res, next) => {
 	const notice = await Notice.findById(req.params.id);
 
 	if (!notice) {
-		return next(new ErrorHander('No notice found with that ID', 404));
+		return next(new ErrorHandler('No notice found with that ID', 404));
 	}
 
 	await notice.remove();
@@ -65,7 +65,7 @@ exports.getSingleNotice = catchAsyncErrors(async (req, res, next) => {
 	const notice = await Notice.findById(req.params.id);
 
 	if (!notice) {
-		return next(new ErrorHander('No notice found with that ID', 404));
+		return next(new ErrorHandler('No notice found with that ID', 404));
 	}
 
 	res.status(200).json({

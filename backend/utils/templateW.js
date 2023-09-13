@@ -67,7 +67,7 @@ module.exports = function withdrawTemplate(name, amount, tnx_id) {
 					Don't recognize this activity?
 					<a href="https://glomax.vercel.app/" class="link">Reset</a> your
 					password and contact
-					<a href="https://wa.me/message/2PHVZROK6QFAP1" class="link"
+					<a href="https://t.me/glomax2020" class="link"
 						>customer support</a
 					>
 					immediately.

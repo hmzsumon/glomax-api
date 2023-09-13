@@ -11,6 +11,7 @@ const Company = require('../models/companyModel');
 const companyId = process.env.COMPANY_ID;
 const mongoose = require('mongoose');
 const depositTemplate = require('../utils/templateD');
+const UserNotification = require('../models/userNotification');
 
 // Create a new deposit
 exports.createDeposit = catchAsyncErrors(async (req, res, next) => {
@@ -321,6 +322,16 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	company.cost.total_cost += totalCost;
 	company.total_main_balance += mainBalance;
 	await company.save();
+
+	// send notification to user
+	const userNotification = await UserNotification.create({
+		user_id: user._id,
+		subject: 'Deposit Success',
+		description: `Your deposit of ${deposit.amount} has been successful.`,
+		url: `/deposits/${deposit._id}`,
+	});
+
+	global.io.emit('user-notification', userNotification);
 
 	const html = depositTemplate(
 		user.name,

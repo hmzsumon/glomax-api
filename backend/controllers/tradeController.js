@@ -6,12 +6,16 @@ const companyId = process.env.COMPANY_ID;
 const Trade = require('../models/tradeModel');
 const TradeRecord = require('../models/tradeRecord');
 const createTransaction = require('../utils/tnx');
+const tradeQueue = require('../queue');
+const Bull = require('bull');
 const axios = require('axios');
 
 // create trade
 exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 	const id = req.user._id;
 	const { amount, trade_type, open_price, symbol, time } = req.body;
+	console.log('time', time, typeof time);
+	const upTime = time - 3000;
 
 	if (amount < 0.1) {
 		return next(new ErrorHandler('Minimum trade amount is $10', 400));
@@ -174,7 +178,7 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 
 	setTimeout(async () => {
 		await updateTrade(trade);
-	}, time);
+	}, upTime);
 
 	res.status(200).json({
 		success: true,
@@ -256,6 +260,7 @@ const updateTrade = async (trade, retryCount = 0) => {
 	const globalTradeAmount = company.total_trade_amount - 50;
 
 	if (result === 'win') {
+		const randomNum = Math.floor(Math.random() * 1000) / 1000;
 		profit = trade.trade_amount * 0.85;
 		totalProfit = Number(trade.trade_amount + profit);
 		// console.log(totalProfit > globalTradeAmount);
@@ -263,9 +268,9 @@ const updateTrade = async (trade, retryCount = 0) => {
 			result = 'loss';
 
 			if (trade.trade_type === 'up') {
-				trade.close_price = trade.open_price - 1;
+				trade.close_price = trade.open_price - randomNum;
 			} else {
-				trade.close_price = trade.open_price + 1;
+				trade.close_price = trade.open_price + randomNum;
 			}
 		} else {
 			trade.close_price = close_price;
@@ -466,5 +471,17 @@ exports.myTrades = catchAsyncErrors(async (req, res, next) => {
 	res.status(200).json({
 		success: true,
 		trades,
+	});
+});
+
+// testing bull
+exports.testBull = catchAsyncErrors(async (req, res, next) => {
+	// Add the job
+
+	console.log('Adding job to queue');
+
+	res.status(200).json({
+		success: true,
+		message: 'Bull test successfully',
 	});
 });

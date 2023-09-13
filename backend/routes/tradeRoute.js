@@ -3,6 +3,7 @@ const {
 	createTrade,
 	updateTrade,
 	myTrades,
+	testBull,
 } = require('../controllers/tradeController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -16,5 +17,8 @@ router.route('/update/trade').put(isAuthenticatedUser, updateTrade);
 
 // get my trades
 router.route('/my/trades').get(isAuthenticatedUser, myTrades);
+
+// test bull
+router.route('/test/bull').get(testBull);
 
 module.exports = router;

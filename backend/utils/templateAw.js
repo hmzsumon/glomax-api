@@ -1,4 +1,4 @@
-module.exports = function withdrawTemplate2(name, amount, tnx_id) {
+module.exports = function withdrawTemplate2(name, amount, tnx_id, e_address) {
 	return `
 <html>
 	<head>
@@ -53,13 +53,22 @@ module.exports = function withdrawTemplate2(name, amount, tnx_id) {
 			</div>
 			<div class="content">
 				<p>Hello ${name},</p>
-				<h3>Withdraw Successful</h3>
+				<h3>USDT Withdraw Successful</h3>
 				<p>
 					Your withdrawal request has been successfully processed. You have
 					received amount
 					<span style="color: #166534"> ${amount}</span>USDT. Please check your
 					crypto wallet.<br />
-					Your Transaction ID is
+					<br />
+					<span style="font-weight: bold; font-size: 17px"
+						>Withdrawal Address:</span
+					>
+					<br />
+					<span style="color: #166534">${e_address} </span>
+					<br /><br />
+					<span style="font-weight: bold; font-size: 17px"
+						>Your Transaction ID:</span
+					><br />
 					<span style="color: #166534"> ${tnx_id} </span>
 				</p>
 				<br />
@@ -68,9 +77,7 @@ module.exports = function withdrawTemplate2(name, amount, tnx_id) {
 					Don't recognize this activity?
 					<a href="https://glomax.vercel.app/" class="link">Reset</a> your
 					password and contact
-					<a href="https://wa.me/message/2PHVZROK6QFAP1" class="link"
-						>customer support</a
-					>
+					<a href="https://t.me/glomax2020" class="link">customer support</a>
 					immediately.
 				</p>
 				<p>This is an automated message, please don't reply.</p>
