@@ -235,6 +235,7 @@ const updateGame = async (id) => {
 		}
 
 		let winners = [];
+
 		// select winners by winner
 		for (let i = 0; i < participants.length; i++) {
 			if (winner.bet_ids.includes(participants[i].bet_id)) {
@@ -316,9 +317,6 @@ const updateGame = async (id) => {
 			await company.save();
 		}
 
-		// socket io for participants
-		global.io.emit('result-pop', participants);
-
 		// create WinGameResult
 		await WinGameResult.create({
 			game_id: game._id,
@@ -345,6 +343,27 @@ const updateGame = async (id) => {
 		game.profit = profit;
 		game.loss = loss;
 		await game.save();
+
+		// filter all user_id and status from participants
+		let user_ids = [];
+
+		for (let i = 0; i < participants.length; i++) {
+			user_ids.push({
+				user_id: participants[i].user_id,
+				status: participants[i].status,
+			});
+		}
+
+		console.log('user_ids', user_ids);
+
+		const ioData = {
+			game_id: game._id,
+			game_type: game.game_type,
+			usersIds: user_ids,
+		};
+
+		// socket io for participants
+		global.io.emit('win-result', ioData);
 
 		// console.log(' ');
 		// console.log('Updated Game', game.game_title);
