@@ -807,3 +807,46 @@ exports.testSocket = catchAsyncErrors(async (req, res, next) => {
 		message: 'test',
 	});
 });
+
+const startGame = async () => {
+	// find all active games
+	const activeGames = await WinGame.find({ is_active: true });
+	if (activeGames.length > 0) {
+		for (let i = 0; i < activeGames.length; i++) {
+			const game = activeGames[i];
+			const participants = await WinGameParticipant.find({ game_id: game._id });
+			if (participants.length > 0) {
+				for (let j = 0; j < participants.length; j++) {
+					const participant = participants[j];
+					// update user balance
+					const user = await User.findById(participant.user_id).select(
+						'm_balance active_balance trading_volume name username'
+					);
+					console.log('user', user.name);
+					user.m_balance += participant.amount;
+					createTransaction(
+						user._id,
+						'cashIn',
+						participant.amount,
+						'win_game_refund',
+						`Win Game Refund from ${game.game_type} Game Period no: #${game.game_id}`
+					);
+					await user.save();
+
+					// update participant status = refund
+					participant.status = 'refund';
+					await participant.save();
+				}
+			}
+
+			// update game
+			game.is_active = false;
+			await game.save();
+		}
+	}
+
+	// create new games
+	createGame(GAME_TIMES.ONE_MINUTE, '1m');
+	createGame(GAME_TIMES.THREE_MINUTES, '3m');
+	createGame(GAME_TIMES.FIVE_MINUTES, '5m');
+};
