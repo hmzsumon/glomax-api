@@ -373,10 +373,85 @@ const updateGame = async (id) => {
 	}
 };
 
-if (process.env.GAME_ON === 'True') {
+// if (process.env.GAME_ON === 'True') {
+// 	// update all is_active =  false
+// 	const allGames = WinGame.updateMany(
+// 		{ is_active: true },
+// 		{ is_active: false },
+// 		function (err, result) {
+// 			if (err) {
+// 				console.log(err);
+// 			} else {
+// 				console.log('Updated all is_active = false');
+// 			}
+// 		}
+// 	);
+
+// 	createGame(GAME_TIMES.ONE_MINUTE, '1m');
+// 	createGame(GAME_TIMES.THREE_MINUTES, '3m');
+// 	createGame(GAME_TIMES.FIVE_MINUTES, '5m');
+// }
+
+// start game and update all is_active = false if have any perticipent in the game refund all amount
+
+const startGame = async () => {
+	// update all is_active =  false
+	// const allGames = WinGame.updateMany(
+	// 	{ is_active: true },
+	// 	{ is_active: false },
+	// 	function (err, result) {
+	// 		if (err) {
+	// 			console.log(err);
+	// 		} else {
+	// 			console.log('Updated all is_active = false');
+	// 		}
+	// 	}
+	// );
+
+	// find all active games
+	const activeGames = await WinGame.find({ is_active: true });
+	if (activeGames.length > 0) {
+		for (let i = 0; i < activeGames.length; i++) {
+			const game = activeGames[i];
+			const participants = await WinGameParticipant.find({ game_id: game._id });
+			if (participants.length > 0) {
+				for (let j = 0; j < participants.length; j++) {
+					const participant = participants[j];
+					// update user balance
+					const user = await User.findById(participant.user_id).select(
+						'm_balance active_balance trading_volume name username'
+					);
+					console.log('user', user.name);
+					user.m_balance += participant.amount;
+					createTransaction(
+						user._id,
+						'cashIn',
+						participant.amount,
+						'win_game_refund',
+						`Win Game Refund from ${game.game_type} Game Period no: #${game.game_id}`
+					);
+					await user.save();
+
+					// update participant status = refund
+					participant.status = 'refund';
+					await participant.save();
+				}
+			}
+
+			// update game
+			game.is_active = false;
+			await game.save();
+		}
+	}
+
+	// create new games
 	createGame(GAME_TIMES.ONE_MINUTE, '1m');
 	createGame(GAME_TIMES.THREE_MINUTES, '3m');
 	createGame(GAME_TIMES.FIVE_MINUTES, '5m');
+};
+
+if (process.env.GAME_ON === 'True') {
+	startGame();
 }
 
 // get all win games
@@ -821,4 +896,67 @@ exports.testSocket = catchAsyncErrors(async (req, res, next) => {
 		success: true,
 		message: 'test',
 	});
+});
+
+// call a cron job for every day at 12:00 AM remove all previous day's data wingame, wingameparticipant, wingameresult
+
+cron.schedule('0 0 * * *', async () => {
+	console.log('running a task every day at 12:00 AM');
+	// remove all previous day's data wingame, wingameparticipant, wingameresult
+	const today = new Date();
+	const yesterday = new Date(
+		today.getFullYear(),
+		today.getMonth(),
+		today.getDate() - 2
+	);
+	console.log('yesterday', yesterday);
+
+	const wingames = await WinGame.find({
+		createdAt: {
+			$gte: new Date(
+				yesterday.getFullYear(),
+				yesterday.getMonth(),
+				yesterday.getDate()
+			),
+			$lte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+		},
+	});
+	console.log('wingames', wingames.length);
+	for (let i = 0; i < wingames.length; i++) {
+		await WinGame.findByIdAndDelete(wingames[i]._id);
+	}
+
+	const wingameparticipants = await WinGameParticipant.find({
+		createdAt: {
+			$gte: new Date(
+				yesterday.getFullYear(),
+				yesterday.getMonth(),
+				yesterday.getDate()
+			),
+			$lte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+		},
+	});
+	console.log('wingameparticipants', wingameparticipants.length);
+	for (let i = 0; i < wingameparticipants.length; i++) {
+		await WinGameParticipant.findByIdAndDelete(wingameparticipants[i]._id);
+	}
+
+	const wingameresults = await WinGameResult.find({
+		createdAt: {
+			$gte: new Date(
+				yesterday.getFullYear(),
+				yesterday.getMonth(),
+				yesterday.getDate()
+			),
+			$lte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+		},
+	});
+	console.log('wingameresults', wingameresults.length);
+	for (let i = 0; i < wingameresults.length; i++) {
+		await WinGameResult.findByIdAndDelete(wingameresults[i]._id);
+	}
+
+	console.log(
+		"removed all previous day's data wingame, wingameparticipant, wingameresult"
+	);
 });

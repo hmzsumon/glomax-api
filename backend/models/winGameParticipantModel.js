@@ -58,7 +58,7 @@ const winGameParticipantSchema = new mongoose.Schema(
 		},
 		status: {
 			type: String,
-			enum: ['pending', 'win', 'lose'],
+			enum: ['pending', 'win', 'lose', 'refund'],
 			default: 'pending',
 		},
 		game_type: {
