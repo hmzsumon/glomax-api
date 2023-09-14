@@ -76,6 +76,20 @@ const GAME_TIMES = {
 	FIVE_MINUTES: 300,
 };
 
+const ACTIVE_GAMES = {
+	'1m': false,
+	'3m': false,
+	'5m': false,
+};
+
+function isGameActive(gameType) {
+	return ACTIVE_GAMES[gameType];
+}
+
+function setGameActive(gameType, state) {
+	ACTIVE_GAMES[gameType] = state;
+}
+
 const getTodayGames = async (duration) => {
 	const today = new Date();
 	return await WinGame.find({
@@ -92,6 +106,12 @@ const getTodayGames = async (duration) => {
 };
 
 const createGame = async (duration, gameTypePrefix) => {
+	if (isGameActive(gameTypePrefix)) {
+		console.log(`Game for ${gameTypePrefix} is already active.`);
+		return;
+	}
+
+	setGameActive(gameTypePrefix, true);
 	const allGame = await getTodayGames(duration);
 
 	const game_id =
@@ -138,6 +158,7 @@ async function countdown(game) {
 			clearInterval(interval); // Stop the interval when the countdown is finished
 			await updateGame(game._id);
 			console.log(`Game finished ${game.game_title}`);
+			setGameActive(game.game_type, false);
 
 			// After the game is finished, wait for 15 seconds and then create a new game
 			setTimeout(() => {
