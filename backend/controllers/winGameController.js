@@ -70,29 +70,10 @@ const buttons = [
 	},
 ];
 
-const GAME_TIMES = {
-	ONE_MINUTE: 60,
-	THREE_MINUTES: 180,
-	FIVE_MINUTES: 300,
-};
-
-const ACTIVE_GAMES = {
-	'1m': false,
-	'3m': false,
-	'5m': false,
-};
-
-function isGameActive(gameType) {
-	return ACTIVE_GAMES[gameType];
-}
-
-function setGameActive(gameType, state) {
-	ACTIVE_GAMES[gameType] = state;
-}
-
-const getTodayGames = async (duration) => {
+const createGameData = async (durationInMinutes) => {
 	const today = new Date();
-	return await WinGame.find({
+	const seconds = durationInMinutes * 60;
+	const allGames = await WinGame.find({
 		createdAt: {
 			$gte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
 			$lte: new Date(
@@ -101,82 +82,63 @@ const getTodayGames = async (duration) => {
 				today.getDate() + 1
 			),
 		},
-		time: duration,
+		time: seconds,
+	});
+
+	const gameId =
+		generateUniqueId() + allGames.length.toString().padStart(2, '0');
+	const gameTitle = `Game${durationInMinutes}m-${gameId.slice(6)}`;
+
+	return await WinGame.create({
+		game_id: gameId,
+		time: seconds,
+		game_type: `${durationInMinutes}m`,
+		game_title: gameTitle,
+		start_time: Date.now(),
+		buttons: buttons, // Assuming 'buttons' is globally defined or you might need to pass it as an argument.
 	});
 };
 
-const createGame = async (duration, gameTypePrefix) => {
-	if (isGameActive(gameTypePrefix)) {
-		console.log(`Game for ${gameTypePrefix} is already active.`);
-		return;
-	}
-
-	setGameActive(gameTypePrefix, true);
-	const allGame = await getTodayGames(duration);
-
-	const game_id =
-		generateUniqueId() + allGame.length.toString().padStart(2, '0');
-	const game_title = `${gameTypePrefix}-${game_id.slice(6)}`;
-
-	const game = await WinGame.create({
-		game_id: game_id,
-		time: duration,
-		game_type: gameTypePrefix.toLowerCase(),
-		game_title: game_title,
-		start_time: Date.now(),
-		buttons: buttons,
-	});
-
-	console.log(`\nCreated ${gameTypePrefix} ${game.game_title}\n`);
-
+const emitGameData = (game, seconds) => {
 	const ioData = {
 		id: game._id,
 		game_id: game.game_id,
-		time: game.time,
+		time: seconds,
 	};
-
-	global.io
-		.to('test-room')
-		.emit(`game-${gameTypePrefix.toLowerCase()}`, ioData);
-
-	await countdown(game);
+	// console.log('game.game_type', `game-${game.game_type}`);
+	global.io.emit(`game-${game.game_type}`, ioData);
 };
 
 async function countdown(game) {
 	let seconds = game.time;
+
 	const interval = setInterval(async () => {
 		seconds--;
-
-		const ioData = {
-			id: game._id,
-			game_id: game.game_id,
-			time: seconds,
-		};
-		global.io.to('game-room').emit(`game-${game.game_type}`, ioData);
-
+		emitGameData(game, seconds);
 		if (seconds === 0) {
-			clearInterval(interval); // Stop the interval when the countdown is finished
+			clearInterval(interval);
 			await updateGame(game._id);
-			console.log(`Game finished ${game.game_title}`);
-			setGameActive(game.game_type, false);
-
-			// After the game is finished, wait for 15 seconds and then create a new game
-			setTimeout(() => {
-				switch (game.time) {
-					case GAME_TIMES.ONE_MINUTE:
-						createGame(GAME_TIMES.ONE_MINUTE, '1m');
-						break;
-					case GAME_TIMES.THREE_MINUTES:
-						createGame(GAME_TIMES.THREE_MINUTES, '3m');
-						break;
-					case GAME_TIMES.FIVE_MINUTES:
-						createGame(GAME_TIMES.FIVE_MINUTES, '5m');
-						break;
-				}
-			}, 15000); // Wait for 15 seconds
+			console.log(colors.green('Game finished', game.game_title));
 		}
-	}, 1000); // Interval of 1 second
+	}, 1000);
 }
+
+const createAndStartGame = async (durationInMinutes) => {
+	const game = await createGameData(durationInMinutes);
+	console.log(
+		colors.green(`Created Game ${durationInMinutes}m`, game.game_title)
+	);
+	emitGameData(game);
+	await countdown(game);
+};
+
+if (process.env.GAME_ON === 'True') {
+	setInterval(() => createAndStartGame(1), 65000);
+	setInterval(() => createAndStartGame(3), 185000);
+	setInterval(() => createAndStartGame(5), 305000);
+}
+
+// ... [Keep the updateGame function and other supporting functions unchanged]
 
 const updateGame = async (id) => {
 	// find admin winner by game_id
@@ -201,7 +163,7 @@ const updateGame = async (id) => {
 
 		if (adminWinner) {
 			winner = adminWinner.winner;
-			// console.log('adminWinner', adminWinner.winner);
+			console.log('adminWinner', adminWinner.winner);
 		} else {
 			if (game.total_trade_amount >= 5 && game.total_trade_amount <= 10) {
 				// console.log('condition2');
@@ -257,7 +219,6 @@ const updateGame = async (id) => {
 		}
 
 		let winners = [];
-
 		// select winners by winner
 		for (let i = 0; i < participants.length; i++) {
 			if (winner.bet_ids.includes(participants[i].bet_id)) {
@@ -291,13 +252,6 @@ const updateGame = async (id) => {
 					'm_balance active_balance trading_volume name username'
 				);
 				user.m_balance += win_amount;
-				createTransaction(
-					user._id,
-					'cashIn',
-					win_amount,
-					'wine_game',
-					`Winning Amount from ${game.game_type} Game Period no: #${game.game_id}`
-				);
 				await user.save();
 			} else {
 				participants[i].status = 'lose';
@@ -394,17 +348,6 @@ const updateGame = async (id) => {
 		// console.log('');
 	}
 };
-
-if (process.env.GAME_ON === 'True') {
-	// start game 1m after 1m
-	setTimeout(() => {
-		createGame(GAME_TIMES.ONE_MINUTE, '1m');
-		createGame(GAME_TIMES.THREE_MINUTES, '3m');
-		createGame(GAME_TIMES.FIVE_MINUTES, '5m');
-	}, 300000);
-}
-
-// start game and update all is_active = false if have any perticipent in the game refund all amount
 
 // get all win games
 exports.getAllWinGames = catchAsyncErrors(async (req, res, next) => {
@@ -911,4 +854,52 @@ cron.schedule('0 0 * * *', async () => {
 	console.log(
 		"removed all previous day's data wingame, wingameparticipant, wingameresult"
 	);
+});
+
+// update all is_active = false if have any perticipent in the game refund all amount
+
+exports.updateAllWinGame = catchAsyncErrors(async (req, res, next) => {
+	// find all active win games
+	const games = await WinGame.find({ is_active: true });
+	if (games.length === 0) {
+		return next(new ErrorHandler('No active games', 404));
+	}
+	console.log('games', games.length);
+	for (let i = 0; i < games.length; i++) {
+		// find all participants of the game
+		const participants = await WinGameParticipant.find({
+			game_id: games[i]._id,
+		});
+		if (participants.length === 0) {
+			console.log('No participants');
+		} else {
+			// update participants
+			for (let j = 0; j < participants.length; j++) {
+				participants[j].status = 'refund';
+				await participants[j].save();
+
+				// update user
+				const user = await User.findById(participants[j].user_id).select(
+					'm_balance active_balance trading_volume name username'
+				);
+				user.m_balance += participants[j].amount;
+				createTransaction(
+					user._id,
+					'cashIn',
+					participants[j].amount,
+					'winning_amount',
+					`Winning Amount from ${games[i].game_type} Game Period no: #${games[i].game_id}`
+				);
+				await user.save();
+			}
+		}
+
+		// update game
+		games[i].is_active = false;
+		await games[i].save();
+	}
+	res.status(200).json({
+		success: true,
+		message: 'All active games updated successfully',
+	});
 });

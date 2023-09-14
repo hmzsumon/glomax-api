@@ -284,7 +284,7 @@ cron.schedule('*/15 * * * *', async () => {
 
 	// console.log(aiRobots.length);
 	let profit = {
-		1: 0.015,
+		1: 0.023,
 		2: 0.016,
 		3: 0.0181,
 	};

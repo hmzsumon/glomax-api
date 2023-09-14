@@ -11,6 +11,7 @@ const {
 	getWinGamesResults,
 	loggedInUserRecords,
 	testSocket,
+	updateAllWinGame,
 } = require('../controllers/winGameController');
 const router = express.Router();
 
@@ -43,4 +44,7 @@ router.get('/logged-in-user-records/:id', loggedInUserRecords);
 
 // test socket
 router.get('/test-socket', testSocket);
+
+// update all win game
+router.put('/update-all-win-game', updateAllWinGame);
 module.exports = router;
