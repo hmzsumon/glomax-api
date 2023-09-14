@@ -285,12 +285,12 @@ cron.schedule('*/15 * * * *', async () => {
 	// console.log(aiRobots.length);
 	let profit = {
 		1: 0.023,
-		2: 0.016,
-		3: 0.0181,
+		2: 0.026,
+		3: 0.03,
 	};
 
 	for (let i = 4; i <= 170; i++) {
-		profit[i] = 0.02;
+		profit[i] = 0.035;
 	}
 
 	for (let i = 0; i < aiRobots.length; i++) {
@@ -337,7 +337,9 @@ cron.schedule('*/15 * * * *', async () => {
 				'cashIn',
 				netProfit + aiRobot.current_investment,
 				'ai_robot',
-				`Profit from Ai Robot ${netProfit} and Refund ${aiRobot.current_investment}`
+				`Profit from Ai Robot $${Number(netProfit).toFixed(5)} and Refund $${
+					aiRobot.current_investment
+				}`
 			);
 			await user.save();
 

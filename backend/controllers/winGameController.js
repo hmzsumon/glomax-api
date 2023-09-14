@@ -104,6 +104,7 @@ const emitGameData = (game, seconds) => {
 		id: game._id,
 		game_id: game.game_id,
 		time: seconds,
+		game_type: game.game_type,
 	};
 	// console.log('game.game_type', `game-${game.game_type}`);
 	global.io.emit(`game-${game.game_type}`, ioData);
