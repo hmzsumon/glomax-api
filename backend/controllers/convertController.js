@@ -1,5 +1,6 @@
 const ErrorHandler = require('../utils/errorhandler');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
+const createTransaction = require('../utils/tnx');
 const User = require('../models/userModel');
 const Company = require('../models/companyModel');
 const companyId = process.env.COMPANY_ID;
@@ -46,6 +47,13 @@ exports.convert = catchAsyncErrors(async (req, res, next) => {
 
 	if (from === 'main') {
 		user.m_balance -= amount;
+		createTransaction(
+			user._id,
+			'cashOut',
+			Number(amount),
+			'convert',
+			`Convert ${amount} from main to ai balance`
+		);
 		user.ai_balance += amount;
 		convertRecord.main_to_ai_total += amount;
 		convertRecord.total_convert += amount;

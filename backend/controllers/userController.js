@@ -8,6 +8,7 @@ const LotteryDetails = require('../models/lotteryDetails');
 const SendDetails = require('../models/sendDetails');
 const ConvertRecord = require('../models/convertRecordModel');
 const TradeRecord = require('../models/tradeRecord');
+const AiRobotRecord = require('../models/aiRobotRecord');
 const Team = require('../models/teamModel');
 const sendToken = require('../utils/jwtToken');
 const { sendEmail } = require('../utils/sendEmail');
@@ -979,10 +980,56 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
 exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {
 	const id = req.params.id;
 	const user = await User.findOne({ customer_id: id }).select('-password');
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
+	// find team by user id
+	const team = await Team.findOne({ user_id: user._id });
+	if (!team) {
+		return next(new ErrorHandler('Team not found', 404));
+	}
+
+	// get ai robotRecord
+	const aiRobotRecord = await AiRobotRecord.findOne({ user_id: user._id });
+	if (!aiRobotRecord) {
+		console.log('robot record not found');
+	}
+
+	// convert record
+	const convertRecord = await ConvertRecord.findOne({ user_id: user._id });
+	if (!convertRecord) {
+		console.log('convert record not found');
+	}
+
+	// get deposit details
+	const depositDetails = await DepositDetails.findOne({ user_id: user._id });
+	if (!depositDetails) {
+		return next(new ErrorHandler('Deposit Details not found', 404));
+	}
+
+	// get withdraw details
+	const withdrawDetails = await WithdrawDetails.findOne({ user_id: user._id });
+	if (!withdrawDetails) {
+		return next(new ErrorHandler('Withdraw Details not found', 404));
+	}
+
+	// get trade record
+	const tradeRecord = await TradeRecord.findOne({ user_id: user._id });
+	if (!tradeRecord) {
+		console.log('trade record not found');
+	}
+
+	//
 	// console.log(user);
 	res.status(200).json({
 		success: true,
 		user,
+		team,
+		aiRobotRecord,
+		convertRecord,
+		depositDetails,
+		withdrawDetails,
+		tradeRecord,
 	});
 });
 

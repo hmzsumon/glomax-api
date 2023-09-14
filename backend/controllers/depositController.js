@@ -246,11 +246,18 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 
 	// update user
 	user.m_balance += deposit.amount;
+	createTransaction(
+		user._id,
+		'cashIn',
+		deposit.amount,
+		'deposit',
+		`Deposit Success ${deposit.amount}`
+	);
 	user.total_deposit += deposit.amount;
 	let totalCost = 0;
 	let mainBalance = deposit.amount;
 
-	if (deposit.amount >= 50 && deposit.is_bonus === true) {
+	if (deposit.amount >= 10 && deposit.is_bonus === true) {
 		user.b_balance += deposit.amount * 0.05;
 		user.m_balance += deposit.amount * 0.05;
 		user.trading_volume += deposit.amount * 0.05 * 5;
@@ -261,9 +268,9 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 			'cashIn',
 			deposit.amount * 0.05,
 			'bonus',
-			`Bonus from Glomax ${deposit.amount * 0.05} & ${
-				deposit.amount * 0.05 * 5
-			} trading volume`
+			`Deposit Bonus from Glomax $${deposit.amount * 0.05} & 
+			increase trading volume 
+			 ${deposit.amount * 0.05 * 5} `
 		);
 		totalCost += deposit.amount * 0.05;
 		company.total_tarde_volume += deposit.amount * 0.05 * 5;
@@ -326,7 +333,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	// send notification to user
 	const userNotification = await UserNotification.create({
 		user_id: user._id,
-		subject: 'Deposit Success',
+		subject: 'USDT Deposit Successful',
 		description: `Your deposit of ${deposit.amount} has been successful.`,
 		url: `/deposits/${deposit._id}`,
 	});

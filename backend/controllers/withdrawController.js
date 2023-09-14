@@ -11,6 +11,7 @@ const companyId = process.env.COMPANY_ID;
 const Notification = require('../models/notificationModel');
 const { sendEmail } = require('../utils/sendEmail');
 const Withdraw = require('../models/withdraw');
+const UserNotification = require('../models/userNotification');
 
 // Create new withdraw request => /api/v1/withdraw/new
 exports.newWithdrawRequest = catchAsyncErrors(async (req, res, next) => {
@@ -296,6 +297,16 @@ exports.approveWithdraw = catchAsyncErrors(async (req, res, next) => {
 	company.income.total_income += withdraw.charge;
 	company.income.withdraw_charge += withdraw.charge;
 	await company.save();
+
+	// send notification to user
+	const userNotification = await UserNotification.create({
+		user_id: user._id,
+		subject: 'USDT Withdraw Successful',
+		description: `Your withdraw request of ${withdraw.amount} was approved`,
+		url: `/withdraw`,
+	});
+
+	global.io.emit('user-notification', userNotification);
 
 	const html = withdrawTemplate2(
 		user.name,

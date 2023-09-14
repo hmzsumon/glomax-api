@@ -14,7 +14,7 @@ const axios = require('axios');
 exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 	const id = req.user._id;
 	const { amount, trade_type, open_price, symbol, time } = req.body;
-	console.log('time', time, typeof time);
+	// console.log('time', time, typeof time);
 	const upTime = time - 3000;
 
 	if (amount < 0.1) {
@@ -92,6 +92,13 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 
 	// update user balance
 	user.m_balance -= amount;
+	createTransaction(
+		user._id,
+		'cashOut',
+		Number(amount),
+		'trade',
+		`Trade ${amount} from main balance`
+	);
 	company.total_main_balance -= amount;
 
 	// create trade

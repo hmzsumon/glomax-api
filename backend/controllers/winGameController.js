@@ -522,6 +522,13 @@ exports.winGameCreateTrade = catchAsyncErrors(async (req, res, next) => {
 
 	// update user balance
 	user.m_balance -= amount;
+	createTransaction(
+		user_id,
+		'cashOut',
+		Number(amount),
+		'wine_game',
+		`Win Game ${game_type} Period ${game.game_id}` // description
+	);
 
 	// create WinGameParticipant
 	const winGameParticipant = await WinGameParticipant.create({
