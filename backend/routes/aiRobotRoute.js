@@ -8,6 +8,8 @@ const {
 	getAllAiRobot,
 	updateAiRobotAutoCreate,
 	updateAllUsersAiRobot,
+	getAllAiRobotAdmin,
+	getSingleAiRobotAdmin,
 } = require('../controllers/aiRobotController');
 const router = express.Router();
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -33,5 +35,23 @@ router.route('/aiRobot/autoCreate').put(updateAiRobotAutoCreate);
 
 // update all users aiRobot
 router.route('/aiRobot/updateAll').put(updateAllUsersAiRobot);
+
+// get all aiRobot admin
+router
+	.route('/admin/aiRobot/all')
+	.get(
+		isAuthenticatedUser,
+		authorizeRoles('admin', 'manager'),
+		getAllAiRobotAdmin
+	);
+
+// get single aiRobot admin
+router
+	.route('/admin/aiRobot/:id')
+	.get(
+		isAuthenticatedUser,
+		authorizeRoles('admin', 'manager'),
+		getSingleAiRobotAdmin
+	);
 
 module.exports = router;

@@ -784,3 +784,50 @@ exports.updateAllUsersAiRobot = catchAsyncErrors(async (req, res, next) => {
 		message: 'All users ai_robot updated successfully',
 	});
 });
+
+// get all aiRobot for admin
+exports.getAllAiRobotAdmin = catchAsyncErrors(async (req, res, next) => {
+	const aiRobots = await AiRobot.find();
+
+	res.status(200).json({
+		success: true,
+		aiRobots,
+	});
+});
+
+// get a single aiRobot for admin by robot_id
+exports.getSingleAiRobotAdmin = catchAsyncErrors(async (req, res, next) => {
+	const aiRobot = await AiRobot.findById(req.params.id);
+	if (!aiRobot) {
+		return next(new ErrorHandler('Ai Robot not found', 404));
+	}
+
+	// find aiRobotRecord by user_id
+	const aiRobotRecord = await AiRobotRecord.findOne({
+		user_id: aiRobot.user_id,
+	});
+	if (!aiRobotRecord) {
+		return next(new ErrorHandler('Ai Robot Record not found', 404));
+	}
+
+	// find user
+	const user = await User.findById(aiRobot.user_id);
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
+
+	const newUser = {
+		name: user.name,
+		username: user.username,
+		customer_id: user.customer_id,
+		m_balance: user.m_balance,
+		ai_balance: user.ai_balance,
+	};
+
+	res.status(200).json({
+		success: true,
+		aiRobot,
+		aiRobotRecord,
+		user: newUser,
+	});
+});

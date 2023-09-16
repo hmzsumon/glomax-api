@@ -330,7 +330,7 @@ const updateTrade = async (trade, retryCount = 0) => {
 	// update company
 	await company.save();
 
-	console.log('Trade updated successfully');
+	// console.log('Trade updated successfully');
 
 	const ioData = {
 		symbol: trade.symbol,
