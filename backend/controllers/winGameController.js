@@ -144,7 +144,7 @@ if (process.env.GAME_ON === 'True') {
 const updateGame = async (id) => {
 	// find admin winner by game_id
 	const adminWinner = await AdminWinner.findOne({ game_id: id });
-	console.log('adminWinner', adminWinner);
+	// console.log('adminWinner', adminWinner);
 
 	const game = await WinGame.findById(id);
 	if (game.is_active) {
@@ -331,7 +331,7 @@ const updateGame = async (id) => {
 			});
 		}
 
-		console.log('user_ids', user_ids);
+		// console.log('user_ids', user_ids);
 
 		const ioData = {
 			game_id: game._id,
@@ -410,6 +410,7 @@ exports.getActive3mWinGame = catchAsyncErrors(async (req, res, next) => {
 	if (!game) {
 		return next(new ErrorHandler('Game not found', 404));
 	}
+	// console.log('game', game);
 	res.status(200).json({
 		success: true,
 		game,
@@ -479,7 +480,7 @@ exports.winGameCreateTrade = catchAsyncErrors(async (req, res, next) => {
 
 	// find user
 	const user = await User.findById(user_id).select(
-		'm_balance parent_1 parent_2 parent_3 trading_volume active_balance'
+		'm_balance parent_1 parent_2 parent_3 trading_volume active_balance name username'
 	);
 	if (!user) {
 		return next(new ErrorHandler('User not found', 404));
@@ -535,7 +536,7 @@ exports.winGameCreateTrade = catchAsyncErrors(async (req, res, next) => {
 		game_id,
 		user_id,
 		user_balance: user.m_balance,
-		name: user.username,
+		name: user.name,
 		period: game.game_id,
 		customer_id,
 		amount,
@@ -675,7 +676,7 @@ exports.getWinGamesResults = catchAsyncErrors(async (req, res, next) => {
 			$gte: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
 		},
 	}).sort({ createdAt: -1 });
-	global.io.emit('result-1m', results);
+
 	res.status(200).json({
 		success: true,
 		results,
@@ -909,5 +910,18 @@ exports.updateAllWinGame = catchAsyncErrors(async (req, res, next) => {
 	res.status(200).json({
 		success: true,
 		message: 'All active games updated successfully',
+	});
+});
+
+// get Participants by game_id
+exports.getParticipantsByGameId = catchAsyncErrors(async (req, res, next) => {
+	const { game_id } = req.params;
+	const participants = await WinGameParticipant.find({ game_id });
+	if (participants.length === 0) {
+		return next(new ErrorHandler('No participants found', 404));
+	}
+	res.status(200).json({
+		success: true,
+		participants,
 	});
 });

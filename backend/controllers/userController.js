@@ -1019,6 +1019,16 @@ exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {
 		console.log('trade record not found');
 	}
 
+	// get last 5 transactions
+	const transactions = await Transaction.find({ user_id: user._id })
+		.sort({
+			createdAt: -1,
+		})
+		.limit(5);
+	if (transactions.length === 0) {
+		console.log('transactions not found');
+	}
+
 	//
 	// console.log(user);
 	res.status(200).json({
@@ -1030,6 +1040,7 @@ exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {
 		depositDetails,
 		withdrawDetails,
 		tradeRecord,
+		transactions,
 	});
 });
 
@@ -1603,6 +1614,20 @@ exports.getTransactions = catchAsyncErrors(async (req, res, next) => {
 	const transactions = await Transaction.find({ user_id: user._id }).sort({
 		createdAt: -1,
 	});
+
+	res.status(200).json({
+		success: true,
+		transactions,
+	});
+});
+
+// get admin transactions
+exports.getAdminTransactions = catchAsyncErrors(async (req, res, next) => {
+	const transactions = await Transaction.find({ user_id: req.params.id })
+		.sort({
+			createdAt: -1,
+		})
+		.limit(300);
 
 	res.status(200).json({
 		success: true,

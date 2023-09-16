@@ -24,6 +24,7 @@ const {
 	adminLogin,
 	getUserDetails,
 	getTransactions,
+	getAdminTransactions,
 } = require('../controllers/userController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -117,5 +118,10 @@ router
 
 // get transactions
 router.route('/transactions').get(isAuthenticatedUser, getTransactions);
+
+// get admin transactions
+router
+	.route('/admin/transactions/:id')
+	.get(isAuthenticatedUser, authorizeRoles('admin'), getAdminTransactions);
 
 module.exports = router;

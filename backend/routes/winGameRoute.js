@@ -12,7 +12,9 @@ const {
 	loggedInUserRecords,
 	testSocket,
 	updateAllWinGame,
+	getParticipantsByGameId,
 } = require('../controllers/winGameController');
+const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 const router = express.Router();
 
 // get all win games
@@ -47,4 +49,12 @@ router.get('/test-socket', testSocket);
 
 // update all win game
 router.put('/update-all-win-game', updateAllWinGame);
+
+// get participants by game id
+router.get(
+	'/get-participants/:game_id',
+	isAuthenticatedUser,
+	authorizeRoles('admin'),
+	getParticipantsByGameId
+);
 module.exports = router;
