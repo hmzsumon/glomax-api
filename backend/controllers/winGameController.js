@@ -164,7 +164,7 @@ const updateGame = async (id) => {
 
 		if (adminWinner) {
 			winner = adminWinner.winner;
-			console.log('adminWinner', adminWinner.winner);
+			// console.log('adminWinner', adminWinner.winner);
 		} else {
 			if (game.total_trade_amount >= 5 && game.total_trade_amount <= 10) {
 				// console.log('condition2');
@@ -253,6 +253,13 @@ const updateGame = async (id) => {
 					'm_balance active_balance trading_volume name username'
 				);
 				user.m_balance += win_amount;
+				createTransaction(
+					user._id,
+					'cashIn',
+					win_amount,
+					'win_game',
+					`Winning Amount from ${game.game_type} Game Period no: #${game.game_id}`
+				);
 				await user.save();
 			} else {
 				participants[i].status = 'lose';
@@ -394,7 +401,11 @@ exports.getActiveTest = catchAsyncErrors(async (req, res, next) => {
 
 // get 1m active win game
 exports.getActive1mWinGame = catchAsyncErrors(async (req, res, next) => {
-	const game = await WinGame.findOne({ game_type: '1m', is_active: true });
+	const game = await WinGame.findOne({ game_type: '1m', is_active: true })
+		.sort({
+			createdAt: -1,
+		})
+		.limit(1);
 	if (!game) {
 		return next(new ErrorHandler('Game not found', 404));
 	}
@@ -406,7 +417,11 @@ exports.getActive1mWinGame = catchAsyncErrors(async (req, res, next) => {
 
 // get 3m active win game
 exports.getActive3mWinGame = catchAsyncErrors(async (req, res, next) => {
-	const game = await WinGame.findOne({ game_type: '3m', is_active: true });
+	const game = await WinGame.findOne({ game_type: '3m', is_active: true })
+		.sort({
+			createdAt: -1,
+		})
+		.limit(1);
 	if (!game) {
 		return next(new ErrorHandler('Game not found', 404));
 	}
@@ -419,7 +434,11 @@ exports.getActive3mWinGame = catchAsyncErrors(async (req, res, next) => {
 
 // get 5m active win game
 exports.getActive5mWinGame = catchAsyncErrors(async (req, res, next) => {
-	const game = await WinGame.findOne({ game_type: '5m', is_active: true });
+	const game = await WinGame.findOne({ game_type: '5m', is_active: true })
+		.sort({
+			createdAt: -1,
+		})
+		.limit(1);
 	if (!game) {
 		return next(new ErrorHandler('Game not found', 404));
 	}
