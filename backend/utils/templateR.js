@@ -1,5 +1,4 @@
 module.exports = function registrationTemplate(name, code) {
-	console.log(name, code);
 	return `
 
 <!DOCTYPE html>

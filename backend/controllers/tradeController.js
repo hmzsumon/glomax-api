@@ -6,8 +6,6 @@ const companyId = process.env.COMPANY_ID;
 const Trade = require('../models/tradeModel');
 const TradeRecord = require('../models/tradeRecord');
 const createTransaction = require('../utils/tnx');
-const tradeQueue = require('../queue');
-const Bull = require('bull');
 const axios = require('axios');
 
 // create trade
