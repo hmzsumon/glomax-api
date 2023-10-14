@@ -333,18 +333,18 @@ exports.cancelWithdraw = catchAsyncErrors(async (req, res, next) => {
 	// find admin
 	const admin = await User.findById(req.user.id);
 	if (!admin) {
-		return next(new ErrorHander('Admin not found', 404));
+		return next(new ErrorHandler('Admin not found', 404));
 	}
 
 	// find withdraw request
 	const withdraw = await Withdraw.findById(req.body.id);
 	if (!withdraw) {
-		return next(new ErrorHander('Withdraw request not found', 404));
+		return next(new ErrorHandler('Withdraw request not found', 404));
 	}
 
 	// check if withdraw request is already approved
 	if (withdraw.is_cancelled) {
-		return next(new ErrorHander('Withdraw request already approved', 400));
+		return next(new ErrorHandler('Withdraw request already approved', 400));
 	}
 
 	// find withdraw details
@@ -354,19 +354,19 @@ exports.cancelWithdraw = catchAsyncErrors(async (req, res, next) => {
 
 	if (!withdrawDetails) {
 		return next(
-			new ErrorHander('Something went wrong. Please try again!', 901)
+			new ErrorHandler('Something went wrong. Please try again!', 901)
 		);
 	}
 	// find user
 	const user = await User.findById(withdraw.user_id);
 	if (!user) {
-		return next(new ErrorHander('User not found', 404));
+		return next(new ErrorHandler('User not found', 404));
 	}
 
 	// find company
 	const company = await Company.findById(companyId);
 	if (!company) {
-		return next(new ErrorHander('Company not found', 404));
+		return next(new ErrorHandler('Company not found', 404));
 	}
 
 	// update withdraw request

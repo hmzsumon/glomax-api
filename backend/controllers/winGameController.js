@@ -133,11 +133,11 @@ const createAndStartGame = async (durationInMinutes) => {
 	await countdown(game);
 };
 
-if (process.env.GAME_ON === 'True') {
-	setInterval(() => createAndStartGame(1), 65000);
-	setInterval(() => createAndStartGame(3), 185000);
-	setInterval(() => createAndStartGame(5), 305000);
-}
+// if (process.env.GAME_ON === 'True') {
+// 	setInterval(() => createAndStartGame(1), 65000);
+// 	setInterval(() => createAndStartGame(3), 185000);
+// 	setInterval(() => createAndStartGame(5), 305000);
+// }
 
 // ... [Keep the updateGame function and other supporting functions unchanged]
 
