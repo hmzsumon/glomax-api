@@ -43,7 +43,7 @@ router.get('/deposit/:id', isAuthenticatedUser, getSingleDeposit);
 
 // approve deposit
 router.put(
-	'/deposit/approve/:id',
+	'/deposit/approve',
 	upload.none(),
 	isAuthenticatedUser,
 	authorizeRoles('admin', 'manager'),

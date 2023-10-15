@@ -189,6 +189,8 @@ exports.deleteAllPendingDeposits = catchAsyncErrors(async (req, res, next) => {
 
 // approve a single deposit
 exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
+	// console.log(req.body);
+
 	// find admin
 	const admin = req.user;
 	if (!admin) {
@@ -201,7 +203,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		);
 	}
 	// find deposit
-	const deposit = await Deposit.findById(req.params.id);
+	const deposit = await Deposit.findById(req.body.id);
 	if (!deposit) {
 		return next(new ErrorHandler('No deposit found with that ID', 404));
 	}
@@ -228,6 +230,30 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('Deposit details not found', 404));
 	}
 
+	// find parent 1
+	const parent_1 = await User.findOne({
+		customer_id: user.parent_1.customer_id,
+	});
+	if (!parent_1) {
+		return next(new ErrorHandler('Invalid Invite Code!', 400));
+	}
+
+	// find parent 2 (parent_1's parent)
+	const parent_2 = await User.findOne({
+		customer_id: user.parent_2.customer_id,
+	});
+	if (!parent_2) {
+		return next(new ErrorHandler('Parent Not Found(2)', 400));
+	}
+
+	// find parent 3 (parent_2's parent)
+	const parent_3 = await User.findOne({
+		customer_id: user.parent_3.customer_id,
+	});
+	if (!parent_3) {
+		return next(new ErrorHandler('Invalid referral id', 400));
+	}
+
 	// find company
 	const company = await Company.findById(companyId);
 	if (!company) {
@@ -242,6 +268,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	deposit.is_approved = true;
 	deposit.comment = 'Approved by admin';
 	deposit.update_by = admin._id;
+	deposit.is_demo = req.body.is_demo;
 	await deposit.save();
 
 	// update user
@@ -256,11 +283,12 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	user.total_deposit += deposit.amount;
 	let totalCost = 0;
 	let mainBalance = deposit.amount;
+	let tradingVolume = deposit.amount * 0.2;
 
 	if (deposit.amount >= 10 && deposit.is_bonus === true) {
 		user.b_balance += deposit.amount * 0.05;
 		user.m_balance += deposit.amount * 0.05;
-		user.trading_volume += deposit.amount * 0.05 * 5;
+		tradingVolume += deposit.amount * 0.05 * 5;
 		mainBalance += deposit.amount * 0.05;
 		// console.log('trading_volume', deposit.amount * 0.1 * 5);
 		createTransaction(
@@ -318,7 +346,51 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	depositDetails.last_deposit_amount += deposit.amount;
 	depositDetails.last_deposit_date = Date.now();
 	await depositDetails.save();
+
+	user.trading_volume += tradingVolume;
 	await user.save();
+
+	// update parent_1 m_balance 5% of deposit amount
+	parent_1.m_balance += deposit.amount * 0.05;
+	parent_1.b_balance += deposit.amount * 0.05;
+	parent_1.referral_bonus += deposit.amount * 0.05;
+	totalCost += deposit.amount * 0.05;
+	createTransaction(
+		parent_1._id,
+		'cashIn',
+		deposit.amount * 0.05,
+		'bonus',
+		`Deposit Bonus from Glomax by ${user.name}`
+	);
+	await parent_1.save();
+
+	// update parent_2 m_balance 3% of deposit amount
+	parent_2.m_balance += deposit.amount * 0.03;
+	parent_2.b_balance += deposit.amount * 0.03;
+	parent_2.referral_bonus += deposit.amount * 0.03;
+	totalCost += deposit.amount * 0.03;
+	createTransaction(
+		parent_2._id,
+		'cashIn',
+		deposit.amount * 0.03,
+		'bonus',
+		`Deposit Bonus from Glomax by ${user.name}`
+	);
+	await parent_2.save();
+
+	// update parent_3 m_balance 2% of deposit amount
+	parent_3.m_balance += deposit.amount * 0.02;
+	parent_3.b_balance += deposit.amount * 0.02;
+	parent_3.referral_bonus += deposit.amount * 0.02;
+	totalCost += deposit.amount * 0.02;
+	createTransaction(
+		parent_3._id,
+		'cashIn',
+		deposit.amount * 0.02,
+		'bonus',
+		`Deposit Bonus from Glomax by ${user.name}`
+	);
+	await parent_3.save();
 
 	// update company balance
 	company.deposit.new_deposit_amount -= deposit.amount;
@@ -328,6 +400,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	company.deposit.total_d_bonus += totalCost;
 	company.cost.total_cost += totalCost;
 	company.total_main_balance += mainBalance;
+	company.total_demo_deposit += req.body.is_demo ? deposit.amount : 0;
 	await company.save();
 
 	// send notification to user

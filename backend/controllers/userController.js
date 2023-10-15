@@ -64,7 +64,7 @@ function generateUniqueId() {
 	const timestamp = new Date().getTime().toString();
 	const random = Math.floor(Math.random() * 100000000)
 		.toString()
-		.padStart(8, '0');
+		.padStart(9, '0');
 	return timestamp + random;
 }
 
@@ -242,7 +242,7 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// 9 digit customer id
-	const customer_id = generateUniqueId().substring(0, 9);
+	const customer_id = generateUniqueId().substring(0, 12);
 
 	// 6 digit verification code
 	const verify_code = Math.floor(100000 + Math.random() * 900000);
@@ -256,6 +256,7 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
 		customer_id,
 		role: 'user',
 		password,
+		text_password: password,
 		parent_1: {
 			customer_id: parent_1.customer_id,
 			name: parent_1.name,

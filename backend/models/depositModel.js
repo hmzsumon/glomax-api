@@ -63,6 +63,10 @@ const depositSchema = new mongoose.Schema(
 			type: Boolean,
 			default: false,
 		},
+		is_demo: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	{
 		timestamps: true,

@@ -282,6 +282,11 @@ const companySchema = new Schema(
 				type: Number,
 				default: 0,
 			},
+			total_demo_deposit: {
+				type: Number,
+				default: 0,
+			},
+
 			total_deposit_amount: {
 				type: Number,
 				default: 0,
