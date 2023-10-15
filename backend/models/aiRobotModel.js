@@ -38,6 +38,11 @@ const aiRobotSchema = new mongoose.Schema(
 		close_time: {
 			type: Date,
 		},
+		time: {
+			type: Number,
+			default: 5,
+		},
+
 		grid_no: {
 			type: Number,
 		},
@@ -77,14 +82,6 @@ const aiRobotSchema = new mongoose.Schema(
 		},
 		refund_amount: {
 			type: Number,
-		},
-		auto_create: {
-			type: Boolean,
-			default: false,
-		},
-		processing: {
-			type: Boolean,
-			default: false,
 		},
 	},
 	{ timestamps: true }
