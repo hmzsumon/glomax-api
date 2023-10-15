@@ -31,8 +31,6 @@ exports.newAiRobot = catchAsyncErrors(async (req, res, next) => {
 		});
 	}
 
-	// console.log(aiRobotRecord._id);
-
 	const company = await Company.findById(companyId);
 	if (!company) {
 		return next(new ErrorHandler('Company not found', 404));
