@@ -314,14 +314,13 @@ const updateAiRobot = async (aiRobot) => {
 
 		// console.log(aiRobots.length);
 		let profit = {
-			1: 0.023,
-			2: 0.026,
-			3: 0.03,
+			1: 0.015,
+			2: 0.016,
+			3: 0.019,
+			4: 0.024,
+			5: 0.035,
+			6: 0.089,
 		};
-
-		for (let i = 4; i <= 170; i++) {
-			profit[i] = 0.035;
-		}
 
 		const profit_amount = aiRobot.current_investment * profit[aiRobot.grid_no];
 		const aiRobotCharge = profit_amount * 0.02;
