@@ -40,7 +40,7 @@ const aiRobotSchema = new mongoose.Schema(
 		},
 		time: {
 			type: Number,
-			default: 10000,
+			default: 8900,
 		},
 
 		grid_no: {
