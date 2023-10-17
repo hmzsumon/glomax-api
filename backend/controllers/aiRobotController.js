@@ -270,6 +270,42 @@ exports.editAiRobot = catchAsyncErrors(async (req, res, next) => {
 });
 
 // update all is_active aiRobot
+// cron.schedule('* * * * *', async () => {
+// 	try {
+// 		// Fetch active AI robots in batches
+// 		const batchSize = 100; // Adjust the batch size as needed
+// 		let offset = 0;
+
+// 		while (true) {
+// 			const aiRobots = await AiRobot.find({
+// 				is_active: true,
+// 			})
+// 				.skip(offset)
+// 				.limit(batchSize);
+
+// 			if (aiRobots.length === 0) {
+// 				break; // No more active AI robots to process
+// 			}
+
+// 			// Process the AI robots in parallel
+// 			await Promise.all(
+// 				aiRobots.map(async (aiRobot) => {
+// 					aiRobot.time = aiRobot.time - 1;
+// 					await aiRobot.save();
+
+// 					if (aiRobot.time <= 0) {
+// 						await updateAiRobot(aiRobot);
+// 					}
+// 				})
+// 			);
+
+// 			offset += batchSize;
+// 		}
+// 	} catch (error) {
+// 		console.error('Error:', error);
+// 	}
+// });
+
 cron.schedule('* * * * *', async () => {
 	try {
 		// Fetch active AI robots in batches
@@ -290,11 +326,12 @@ cron.schedule('* * * * *', async () => {
 			// Process the AI robots in parallel
 			await Promise.all(
 				aiRobots.map(async (aiRobot) => {
-					aiRobot.time = aiRobot.time - 1;
+					aiRobot.time = aiRobot.time - 1; // Decrease time by 10 minutes
 					await aiRobot.save();
-
+					console.log('ai name', aiRobot.customer_id, 'time', aiRobot.time);
 					if (aiRobot.time <= 0) {
 						await updateAiRobot(aiRobot);
+						console.log('ai name', aiRobot.customer_id);
 					}
 				})
 			);
