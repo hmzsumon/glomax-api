@@ -16,7 +16,12 @@ exports.newAiRobot = catchAsyncErrors(async (req, res, next) => {
 	if (!user) {
 		return next(new ErrorHandler('User not found', 404));
 	}
-	// console.log(req.body);
+
+	// check user.ai_robot is true or false
+	if (user.ai_robot) {
+		return next(new ErrorHandler('Ai Robot already created', 400));
+	}
+
 	// check if user al_balance is greater than investment
 	if (user.al_balance < investment) {
 		return next(new ErrorHandler('Insufficient balance', 400));
