@@ -10,6 +10,7 @@ const {
 	updateAllUsersAiRobot,
 	getAllAiRobotAdmin,
 	getSingleAiRobotAdmin,
+	claimAiRobotProfit,
 } = require('../controllers/aiRobotController');
 const router = express.Router();
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -53,5 +54,10 @@ router
 		authorizeRoles('admin', 'manager'),
 		getSingleAiRobotAdmin
 	);
+
+// claim aiRobot profit
+router
+	.route('/aiRobot/claimProfit')
+	.put(isAuthenticatedUser, claimAiRobotProfit);
 
 module.exports = router;
