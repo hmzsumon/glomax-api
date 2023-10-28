@@ -130,6 +130,14 @@ const userSchema = new mongoose.Schema(
 				type: Number,
 				default: 0,
 			},
+			level_4: {
+				type: Number,
+				default: 0,
+			},
+			level_5: {
+				type: Number,
+				default: 0,
+			},
 		},
 
 		// trade option
@@ -219,6 +227,26 @@ const userSchema = new mongoose.Schema(
 			},
 		},
 
+		parent_4: {
+			customer_id: {
+				type: String,
+				ref: 'User',
+			},
+			name: {
+				type: String,
+			},
+		},
+
+		parent_5: {
+			customer_id: {
+				type: String,
+				ref: 'User',
+			},
+			name: {
+				type: String,
+			},
+		},
+
 		level_1_count: {
 			type: Number,
 			default: 0,
@@ -228,6 +256,16 @@ const userSchema = new mongoose.Schema(
 			default: 0,
 		},
 		level_3_count: {
+			type: Number,
+			default: 0,
+		},
+
+		level_4_count: {
+			type: Number,
+			default: 0,
+		},
+
+		level_5_count: {
 			type: Number,
 			default: 0,
 		},

@@ -254,6 +254,23 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('Invalid referral id', 400));
 	}
 
+	// find parent 4
+	const parent_4 = await User.findOne({
+		customer_id: user.parent_4.customer_id,
+	});
+
+	if (!parent_4) {
+		return next(new ErrorHandler('Parent not Found(4)', 400));
+	}
+
+	// find parent 5
+	const parent_5 = await User.findOne({
+		customer_id: user.parent_5.customer_id,
+	});
+	if (!parent_5) {
+		return next(new ErrorHandler('Parent not Found(5)', 400));
+	}
+
 	// find company
 	const company = await Company.findById(companyId);
 	if (!company) {
@@ -283,7 +300,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	user.total_deposit += deposit.amount;
 	let totalCost = 0;
 	let mainBalance = deposit.amount;
-	let tradingVolume = deposit.amount * 0.2;
+	let tradingVolume = deposit.amount * 0.1;
 
 	if (deposit.amount >= 10 && deposit.is_bonus === true) {
 		user.b_balance += deposit.amount * 0.05;
@@ -360,37 +377,66 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		'cashIn',
 		deposit.amount * 0.05,
 		'bonus',
-		`Deposit Bonus from Glomax by ${user.name}`
+		`1st Level Deposit Bonus from Glomax by ${user.name}`
 	);
 	await parent_1.save();
 
 	// update parent_2 m_balance 3% of deposit amount
-	parent_2.m_balance += deposit.amount * 0.03;
-	parent_2.b_balance += deposit.amount * 0.03;
-	parent_2.referral_bonus += deposit.amount * 0.03;
-	totalCost += deposit.amount * 0.03;
+	parent_2.m_balance += deposit.amount * 0.02;
+	parent_2.b_balance += deposit.amount * 0.02;
+	parent_2.referral_bonus += deposit.amount * 0.02;
+	totalCost += deposit.amount * 0.02;
 	createTransaction(
 		parent_2._id,
 		'cashIn',
-		deposit.amount * 0.03,
+		deposit.amount * 0.02,
 		'bonus',
-		`Deposit Bonus from Glomax by ${user.name}`
+		`2nd Level Deposit Bonus from Glomax by ${user.name}`
 	);
 	await parent_2.save();
 
 	// update parent_3 m_balance 2% of deposit amount
-	parent_3.m_balance += deposit.amount * 0.02;
-	parent_3.b_balance += deposit.amount * 0.02;
-	parent_3.referral_bonus += deposit.amount * 0.02;
-	totalCost += deposit.amount * 0.02;
+	parent_3.m_balance += deposit.amount * 0.01;
+	parent_3.b_balance += deposit.amount * 0.01;
+	parent_3.referral_bonus += deposit.amount * 0.01;
+	totalCost += deposit.amount * 0.01;
 	createTransaction(
 		parent_3._id,
 		'cashIn',
-		deposit.amount * 0.02,
+		deposit.amount * 0.01,
 		'bonus',
-		`Deposit Bonus from Glomax by ${user.name}`
+		`3rd Level Deposit Bonus from Glomax by ${user.name}`
 	);
 	await parent_3.save();
+
+	// update parent_4 m_balance 1% of deposit amount
+	parent_4.m_balance += deposit.amount * 0.01;
+	parent_4.b_balance += deposit.amount * 0.01;
+	parent_4.referral_bonus += deposit.amount * 0.01;
+	totalCost += deposit.amount * 0.01;
+	createTransaction(
+		parent_4._id,
+		'cashIn',
+		deposit.amount * 0.01,
+		'bonus',
+		`4th Level Deposit Bonus from Glomax by ${user.name}`
+	);
+
+	await parent_4.save();
+
+	// update parent_5 m_balance 1% of deposit amount
+	parent_5.m_balance += deposit.amount * 0.01;
+	parent_5.b_balance += deposit.amount * 0.01;
+	parent_5.referral_bonus += deposit.amount * 0.01;
+	totalCost += deposit.amount * 0.01;
+	createTransaction(
+		parent_5._id,
+		'cashIn',
+		deposit.amount * 0.01,
+		'bonus',
+		`5th Level Deposit Bonus from Glomax by ${user.name}`
+	);
+	await parent_5.save();
 
 	// update company balance
 	company.deposit.new_deposit_amount -= deposit.amount;

@@ -238,7 +238,25 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
 		customer_id: parent_2.parent_1.customer_id,
 	});
 	if (!parent_3) {
-		return next(new ErrorHandler('Invalid referral id', 400));
+		return next(new ErrorHandler('Parent Not Found(3)', 400));
+	}
+
+	// find parent 4 (parent_3's parent)
+	const parent_4 = await User.findOne({
+		customer_id: parent_3.parent_1.customer_id,
+	});
+
+	if (!parent_4) {
+		return next(new ErrorHandler('Parent Not Found(4)', 400));
+	}
+
+	// find parent 5 (parent_4's parent)
+	const parent_5 = await User.findOne({
+		customer_id: parent_4.parent_1.customer_id,
+	});
+
+	if (!parent_5) {
+		return next(new ErrorHandler('Parent Not Found(5)', 400));
 	}
 
 	// 9 digit customer id
@@ -247,10 +265,13 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
 	// 6 digit verification code
 	const verify_code = Math.floor(100000 + Math.random() * 900000);
 
+	// modify username to lowercase and remove space
+	const nick_name = username.toLowerCase().replace(/\s/g, '');
+
 	// console.log(nick_name);
 	const user = await User.create({
 		name,
-		username,
+		username: nick_name,
 		email,
 		phone,
 		customer_id,
@@ -268,6 +289,16 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
 		parent_3: {
 			customer_id: parent_3.customer_id,
 			name: parent_3.name,
+		},
+
+		parent_4: {
+			customer_id: parent_4.customer_id,
+			name: parent_4.name,
+		},
+
+		parent_5: {
+			customer_id: parent_5.customer_id,
+			name: parent_5.name,
 		},
 
 		verify_code,
@@ -354,6 +385,36 @@ exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
 	const parent3_team = await Team.findOne({ user_id: parent_3._id });
 	if (!parent3_team) {
 		return next(new ErrorHandler('Sponsor team not found', 400));
+	}
+
+	// find parent 4
+	const parent_4 = await User.findOne({
+		customer_id: user.parent_4.customer_id,
+	});
+
+	if (!parent_4) {
+		return next(new ErrorHandler('Parent 4 not found', 400));
+	}
+
+	// parent 4 team
+	const parent4_team = await Team.findOne({ user_id: parent_4._id });
+	if (!parent4_team) {
+		return next(new ErrorHandler('Parent 4 team not found', 400));
+	}
+
+	// find parent 5
+	const parent_5 = await User.findOne({
+		customer_id: user.parent_5.customer_id,
+	});
+
+	if (!parent_5) {
+		return next(new ErrorHandler('Parent 5 not found', 400));
+	}
+
+	// parent 5 team
+	const parent5_team = await Team.findOne({ user_id: parent_5._id });
+	if (!parent5_team) {
+		return next(new ErrorHandler('Parent 5 team not found', 400));
 	}
 
 	// find company by company id
@@ -443,6 +504,22 @@ exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
 	// update parent 3 team
 	parent3_team.level_3.push(user._id);
 	await parent3_team.save();
+
+	// update parent 4
+	parent_4.level_4_count += 1;
+	await parent_4.save();
+
+	// update parent 4 team
+	parent4_team.level_4.push(user._id);
+	await parent4_team.save();
+
+	// update parent 5
+	parent_5.level_5_count += 1;
+	await parent_5.save();
+
+	// update parent 5 team
+	parent5_team.level_5.push(user._id);
+	await parent5_team.save();
 
 	// update company
 	company.users.email_verified_users += 1;
@@ -1343,16 +1420,20 @@ exports.getTeam = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('Team not found', 404));
 	}
 
-	// find all members by level_1, level_2, level_3
+	// find all members by level_1, level_2, level_3, level_4, level_5
 	const level_1 = await User.find({ 'parent_1.customer_id': user.customer_id });
 	// console.log(level_1.length);
 	const level_2 = await User.find({ 'parent_2.customer_id': user.customer_id });
 	// console.log(level_2.length);
 	const level_3 = await User.find({ 'parent_3.customer_id': user.customer_id });
 	// console.log(level_3.length);
+	const level_4 = await User.find({ 'parent_4.customer_id': user.customer_id });
+	// console.log(level_4.length);
+	const level_5 = await User.find({ 'parent_5.customer_id': user.customer_id });
+	// console.log(level_5.length);
 
 	// all members
-	let allMembers = [...level_1, ...level_2, ...level_3];
+	let allMembers = [...level_1, ...level_2, ...level_3, ...level_4, ...level_5];
 
 	let newMembers = [];
 	let level = 1;
@@ -1367,6 +1448,10 @@ exports.getTeam = catchAsyncErrors(async (req, res, next) => {
 			level = 2;
 		} else if (level_3.includes(member)) {
 			level = 3;
+		} else if (level_4.includes(member)) {
+			level = 4;
+		} else if (level_5.includes(member)) {
+			level = 5;
 		}
 
 		newMembers.push({
@@ -1633,5 +1718,53 @@ exports.getAdminTransactions = catchAsyncErrors(async (req, res, next) => {
 	res.status(200).json({
 		success: true,
 		transactions,
+	});
+});
+
+// add all users parent 4 and 5 to default username = rwmaster
+exports.addParent4And5 = catchAsyncErrors(async (req, res, next) => {
+	const users = await User.find({ role: 'user' });
+	if (!users) {
+		return next(new ErrorHandler('Users not found', 404));
+	}
+
+	// find default user by username = rwmaster
+	const defaultUser = await User.findOne({ username: 'glomaxmaster' });
+	if (!defaultUser) {
+		return next(new ErrorHandler('Default user not found', 404));
+	}
+
+	// find default user team
+	const defaultUserTeam = await Team.findOne({ user_id: defaultUser._id });
+	if (!defaultUserTeam) {
+		return next(new ErrorHandler('Default user team not found', 404));
+	}
+
+	for (let i = 0; i < users.length; i++) {
+		const user = users[i];
+		// console.log(user);
+
+		// update user parent 4 and 5
+		user.parent_4 = {
+			customer_id: defaultUser.customer_id,
+			name: defaultUser.name,
+		};
+
+		user.parent_5 = {
+			customer_id: defaultUser.customer_id,
+			name: defaultUser.name,
+		};
+
+		await user.save();
+
+		// update default user team
+		defaultUserTeam.level_4.push(user._id);
+		defaultUserTeam.level_5.push(user._id);
+		await defaultUserTeam.save();
+	}
+
+	res.status(200).json({
+		success: true,
+		message: 'Parent 4 and 5 added successfully',
 	});
 });

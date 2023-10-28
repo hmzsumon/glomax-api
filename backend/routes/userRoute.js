@@ -25,6 +25,7 @@ const {
 	getUserDetails,
 	getTransactions,
 	getAdminTransactions,
+	addParent4And5,
 } = require('../controllers/userController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -123,5 +124,8 @@ router.route('/transactions').get(isAuthenticatedUser, getTransactions);
 router
 	.route('/admin/transactions/:id')
 	.get(isAuthenticatedUser, authorizeRoles('admin'), getAdminTransactions);
+
+// add parent 4 and 5
+router.route('/add-parent-4-and-5').put(addParent4And5);
 
 module.exports = router;
