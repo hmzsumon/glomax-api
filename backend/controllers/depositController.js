@@ -322,33 +322,23 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	if (user.is_newUser) {
-		// console.log('new user');
+		console.log('new user', user.name);
 		depositDetails.first_deposit_amount += deposit.amount;
 		depositDetails.first_deposit_date = Date.now();
 		depositDetails.s_bonus += 2;
 		depositDetails.is_new = false;
 
-		// find parent_1
-		const sponsor = await User.findOne({
-			customer_id: user.parent_1.customer_id,
-		});
-
-		if (!sponsor) {
-			return next(new ErrorHandler('Sponsor not found', 404));
-		}
-
 		// update sponsor
-		sponsor.m_balance += 2;
-		sponsor.b_balance += 2;
-		sponsor.referral_bonus += 2;
+		parent_1.m_balance += 2;
+		parent_1.b_balance += 2;
+		parent_1.referral_bonus += 2;
 		createTransaction(
-			sponsor._id,
+			parent_1._id,
 			'cashIn',
 			2,
 			'bonus',
 			`Referral Bonus from Glomax by ${user.name}`
 		);
-		await sponsor.save();
 		totalCost += 2;
 		// update user
 		user.is_newUser = false;
@@ -356,6 +346,8 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		company.cost.referral_bonus_cost += 2;
 		company.users.total_active_users += 1;
 		company.users.new_users -= 1;
+
+		console.log('new user p-1', parent_1.name);
 	}
 
 	// update deposit details
