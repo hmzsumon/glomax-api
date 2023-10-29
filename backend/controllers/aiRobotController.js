@@ -333,6 +333,17 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	if (!aiRobot) {
 		return next(new ErrorHandler('Ai Robot not found', 404));
 	}
+
+	// check if aiRobot is active false
+	if (!aiRobot.is_active) {
+		return next(new ErrorHandler('Ai Robot is not active', 400));
+	}
+
+	// check if aiRobot is claimed
+	if (!aiRobot.is_claimed) {
+		return next(new ErrorHandler('Ai Robot profit already claimed', 400));
+	}
+
 	// find company
 	const company = await Company.findById(companyId);
 	// console.log(aiRobots.length);
