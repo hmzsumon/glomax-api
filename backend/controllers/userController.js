@@ -632,6 +632,7 @@ exports.createPassword = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	user.password = password;
+	user.text_password = password;
 	await user.save();
 
 	// create token
@@ -984,7 +985,7 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
 	const user = await User.findOne({ email: req.body.email });
 
 	if (!user) {
-		return next(new ErrorHander('User not found', 404));
+		return next(new ErrorHandler('User not found', 404));
 	}
 
 	// Get ResetPassword Token
@@ -1034,7 +1035,7 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
 
 	if (!user) {
 		return next(
-			new ErrorHander(
+			new ErrorHandler(
 				'Reset Password Token is invalid or has been expired',
 				400
 			)
@@ -1042,7 +1043,7 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	if (req.body.password !== req.body.confirmPassword) {
-		return next(new ErrorHander('Password does not password', 400));
+		return next(new ErrorHandler('Password does not password', 400));
 	}
 
 	user.password = req.body.password;
