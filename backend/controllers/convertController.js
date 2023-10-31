@@ -10,17 +10,19 @@ const ConvertRecord = require('../models/convertRecordModel');
 // Convert
 exports.convert = catchAsyncErrors(async (req, res, next) => {
 	const { amount, from, to, id } = req.body;
+	const numAmount = Number(amount);
+	console.log(typeof numAmount, typeof amount);
 	// console.log(req.body);
 	const user = await User.findById(id);
 	if (!user) {
 		return next(new ErrorHandler('User not found', 404));
 	}
 
-	if (from === 'main' && user.m_balance < amount) {
+	if (from === 'main' && user.m_balance < numAmount) {
 		return next(new ErrorHandler('Insufficient balance', 400));
 	}
 
-	if (from === 'ai' && user.ai_balance < amount) {
+	if (from === 'ai' && user.ai_balance < numAmount) {
 		return next(new ErrorHandler('Insufficient balance', 400));
 	}
 
@@ -39,47 +41,47 @@ exports.convert = catchAsyncErrors(async (req, res, next) => {
 	const convert = await Convert.create({
 		user_id: user._id,
 		customer_id: user.customer_id,
-		amount,
+		numAmount,
 		from,
 		to,
 		status: 'success',
 	});
 
 	if (from === 'main') {
-		user.m_balance -= amount;
+		user.m_balance -= numAmount;
 		createTransaction(
 			user._id,
 			'cashOut',
-			Number(amount),
+			numAmount,
 			'convert',
-			`Convert ${amount} from main to ai balance`
+			`Convert ${numAmount} from main to ai balance`
 		);
-		user.ai_balance += amount;
-		convertRecord.main_to_ai_total += amount;
-		convertRecord.total_convert += amount;
+		user.ai_balance += numAmount;
+		convertRecord.main_to_ai_total += numAmount;
+		convertRecord.total_convert += numAmount;
 		convertRecord.last_convert = {
 			date: Date.now(),
-			amount,
+			numAmount,
 			from,
 		};
 
-		company.total_main_balance -= amount;
-		company.total_ai_balance += amount;
-		company.total_convert += amount;
+		company.total_main_balance -= numAmount;
+		company.total_ai_balance += numAmount;
+		company.total_convert += numAmount;
 	} else {
-		user.ai_balance -= amount;
-		user.m_balance += amount;
-		convertRecord.ai_to_main_total += amount;
-		convertRecord.total_convert += amount;
+		user.ai_balance -= numAmount;
+		user.m_balance += numAmount;
+		convertRecord.ai_to_main_total += numAmount;
+		convertRecord.total_convert += numAmount;
 		convertRecord.last_convert = {
 			date: Date.now(),
-			amount,
+			numAmount,
 			from,
 		};
 
-		company.total_main_balance += amount;
-		company.total_ai_balance -= amount;
-		company.total_convert += amount;
+		company.total_main_balance += numAmount;
+		company.total_ai_balance -= numAmount;
+		company.total_convert += numAmount;
 	}
 
 	await user.save();
