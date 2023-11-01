@@ -55,7 +55,7 @@ exports.newAiRobot = catchAsyncErrors(async (req, res, next) => {
 		pair,
 		grid_no,
 		price_range,
-		profit_percent: '2% - 30%',
+		profit_percent: '3.5% - 5%',
 		last_price,
 		open_time: Date.now(),
 		close_time,
@@ -348,22 +348,22 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	const company = await Company.findById(companyId);
 	// console.log(aiRobots.length);
 	let profit = {
-		1: 0.03,
-		2: 0.036,
-		3: 0.039,
-		4: 0.042,
-		5: 0.045,
-		6: 0.1,
+		1: 0.042,
+		2: 0.044,
+		3: 0.046,
+		4: 0.048,
+		5: 0.049,
+		6: 0.5,
 	};
 
 	const profit_amount = aiRobot.current_investment * profit[aiRobot.grid_no];
-	// console.log('profit_amount', profit_amount);
+	console.log('profit_amount', profit_amount);
 	const reFundAmount = aiRobot.current_investment + profit_amount;
 	// console.log('reFundAmount', reFundAmount);
-	const aiRobotCharge = reFundAmount * 0.01;
+	const aiRobotCharge = aiRobot.current_investment * 0.015;
 	// console.log('aiRobotCharge', aiRobotCharge);
-	const netProfit = reFundAmount - aiRobotCharge;
-	// console.log('netProfit', netProfit);
+	const netProfit = profit_amount - aiRobotCharge;
+	console.log('netProfit', netProfit);
 
 	// find parent_1
 	const parent_1 = await User.findOne({
@@ -395,7 +395,8 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 
 	// update user balance
 	user.ai_robot = false;
-	user.ai_balance += netProfit;
+	user.ai_balance += aiRobot.current_investment;
+	user.m_balance += netProfit;
 	// decrease trading_volume amount by profit_amount 10%
 	const decAmount = profit_amount * 0.1;
 	// console.log('dec', decAmount);
@@ -407,16 +408,16 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 		}
 	}
 	company.total_active_ai_balance -= aiRobot.current_investment;
-	company.total_ai_balance += aiRobot.current_investment + netProfit;
+	company.total_ai_balance += aiRobot.current_investment;
 
 	createTransaction(
 		user._id,
 		'cashIn',
 		netProfit,
 		'ai_robot',
-		`Profit from Ai Robot $${Number(profit_amount).toFixed(
-			5
-		)} and Refund $${netProfit}`
+		`Profit from Ai Robot $${Number(netProfit).toFixed(5)} and Refund $${
+			aiRobot.current_investment
+		}`
 	);
 	await user.save();
 

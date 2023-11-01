@@ -71,7 +71,7 @@ exports.newWithdrawRequest = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// user balance
-	user.m_balance = user.m_balance - numAmount;
+	user.m_balance -= numAmount;
 	createTransaction(
 		user._id,
 		'cashOut',
