@@ -437,8 +437,8 @@ exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
 		`Signup bonus $2.00 from Glomax`
 	);
 	user.signup_bonus += 2;
-	user.trading_volume += 2 * 5;
-	company.total_trade_volume += 2 * 5;
+	user.trading_volume += 2 * 1;
+	company.total_trade_volume += 2 * 1;
 	await user.save();
 
 	// create withdraw details
@@ -1773,7 +1773,7 @@ exports.addParent4And5 = catchAsyncErrors(async (req, res, next) => {
 });
 
 // every 1 minute corn job
-cron.schedule('0 0 * * *', async () => {
+cron.schedule('0 * * * *', async () => {
 	// get all active users
 	const users = await User.find({ is_active: true, rank_is_processing: false });
 	if (!users) {
