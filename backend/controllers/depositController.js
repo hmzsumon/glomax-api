@@ -59,6 +59,10 @@ exports.createDeposit = catchAsyncErrors(async (req, res, next) => {
 		is_bonus,
 	});
 
+	// update user is_deposit_requested
+	user.is_deposit_requested = true;
+	await user.save();
+
 	// update deposit details
 	if (user.is_newUser) {
 		depositDetails.is_new = true;
@@ -289,6 +293,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	await deposit.save();
 
 	// update user
+	user.is_deposit_requested = false;
 	user.m_balance += deposit.amount;
 	createTransaction(
 		user._id,
@@ -298,6 +303,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		`Deposit Success ${deposit.amount}`
 	);
 	user.total_deposit += deposit.amount;
+
 	let totalCost = 0;
 	let mainBalance = deposit.amount;
 	let tradingVolume = deposit.amount * 0.1;
@@ -322,7 +328,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	if (user.is_newUser) {
-		console.log('new user', user.name);
+		// console.log('new user', user.name);
 		depositDetails.first_deposit_amount += deposit.amount;
 		depositDetails.first_deposit_date = Date.now();
 		depositDetails.s_bonus += 2;

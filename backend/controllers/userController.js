@@ -23,6 +23,7 @@ const registrationTemplate = require('../utils/templateR');
 const securityTemplate = require('../utils/templateS');
 const Company = require('../models/companyModel');
 const companyId = process.env.COMPANY_ID;
+const cron = require('node-cron');
 
 //======================================
 //seed user => /api/v1/seed/user
@@ -1769,3 +1770,95 @@ exports.addParent4And5 = catchAsyncErrors(async (req, res, next) => {
 		message: 'Parent 4 and 5 added successfully',
 	});
 });
+
+// every 1 minute corn job
+// cron.schedule('* * * * *', async () => {
+// 	// get all active users
+// 	const users = await User.find({ is_active: true });
+// 	if (!users) {
+// 		console.log('users not found');
+// 	}
+
+// 	// get all active users team
+// 	for (let i = 0; i < users.length; i++) {
+// 		const user = users[i];
+// 		// console.log(user);
+
+// 		// find user team
+// 		const team = await Team.findOne({ user_id: user._id });
+// 		if (!team) {
+// 			console.log('team not found');
+// 		}
+
+// 		// get all level 1 active members
+// 		const level_1_count = await User.countDocuments({
+// 			'parent_1.customer_id': user.customer_id,
+// 			is_active: true,
+// 		});
+
+// 		// get all level 2 active members
+// 		const level_2_count = await User.countDocuments({
+// 			'parent_2.customer_id': user.customer_id,
+// 			is_active: true,
+// 		});
+
+// 		// get all level 3 active members
+// 		const level_3_count = await User.countDocuments({
+// 			'parent_3.customer_id': user.customer_id,
+// 			is_active: true,
+// 		});
+
+// 		// get all level 4 active members
+// 		const level_4_count = await User.countDocuments({
+// 			'parent_4.customer_id': user.customer_id,
+// 			is_active: true,
+// 		});
+
+// 		// get all level 5 active members
+// 		const level_5_count = await User.countDocuments({
+// 			'parent_5.customer_id': user.customer_id,
+// 			is_active: true,
+// 		});
+
+// 		const total_members =
+// 			level_1_count +
+// 			level_2_count +
+// 			level_3_count +
+// 			level_4_count +
+// 			level_5_count;
+
+// 		// update user rank
+// 		if (user.rank === 'member' && level_1_count >= 5 && total_members >= 30) {
+// 			user.rank_is_processing = true;
+// 			await user.save();
+// 		} else if (
+// 			user.rank === 'premier' &&
+// 			level_1_count >= 8 &&
+// 			total_members >= 50
+// 		) {
+// 			user.rank_is_processing = true;
+// 			await user.save();
+// 		} else if (
+// 			user.rank === 'elite' &&
+// 			level_1_count >= 10 &&
+// 			total_members >= 70
+// 		) {
+// 			user.rank_is_processing = true;
+// 			await user.save();
+// 		} else if (
+// 			user.rank === 'majestic' &&
+// 			level_1_count >= 12 &&
+// 			total_members >= 100
+// 		) {
+// 			user.rank_is_processing = true;
+// 			await user.save();
+// 		} else if (
+// 			user.rank === 'royal' &&
+// 			level_1_count >= 15 &&
+// 			total_members >= 150
+// 		) {
+// 			user.rank_is_processing = true;
+// 			await user.save();
+// 		}
+// 	}
+// });

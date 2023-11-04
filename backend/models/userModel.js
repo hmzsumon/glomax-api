@@ -341,8 +341,30 @@ const userSchema = new mongoose.Schema(
 			],
 			default: 'member',
 		},
+		rank_is_processing: {
+			type: Boolean,
+			default: false,
+		},
+
+		// rank details
+		rank_details: {
+			rank: {
+				type: String,
+			},
+			achieved_date: {
+				type: Date,
+			},
+			amount: {
+				type: Number,
+			},
+		},
 
 		is_withdraw_requested: {
+			type: Boolean,
+			default: false,
+		},
+
+		is_deposit_requested: {
 			type: Boolean,
 			default: false,
 		},
