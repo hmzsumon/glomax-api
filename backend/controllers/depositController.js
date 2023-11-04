@@ -20,6 +20,11 @@ exports.createDeposit = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('User not found', 404));
 	}
 
+	// check if user is is_deposit_requested
+	if (user.is_deposit_requested) {
+		return next(new ErrorHandler('Deposit already requested', 400));
+	}
+
 	// find DepositDetails
 	let depositDetails = await DepositDetails.findOne({ user_id: req.user.id });
 	if (!depositDetails) {
