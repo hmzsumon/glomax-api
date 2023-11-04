@@ -346,6 +346,16 @@ const userSchema = new mongoose.Schema(
 			default: false,
 		},
 
+		// processing for
+		processing_for: {
+			type: String,
+		},
+
+		rank_claimed: {
+			type: Boolean,
+			default: true,
+		},
+
 		// rank details
 		rank_details: {
 			rank: {

@@ -1,4 +1,5 @@
 const ErrorHandler = require('../utils/errorhandler');
+const UserNotification = require('../models/userNotification');
 const Transaction = require('../models/transaction');
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
 const User = require('../models/userModel');
@@ -1772,93 +1773,259 @@ exports.addParent4And5 = catchAsyncErrors(async (req, res, next) => {
 });
 
 // every 1 minute corn job
-// cron.schedule('* * * * *', async () => {
-// 	// get all active users
-// 	const users = await User.find({ is_active: true });
-// 	if (!users) {
-// 		console.log('users not found');
-// 	}
+cron.schedule('* * * * *', async () => {
+	// get all active users
+	const users = await User.find({ is_active: true, rank_is_processing: false });
+	if (!users) {
+		console.log('users not found');
+	}
 
-// 	// get all active users team
-// 	for (let i = 0; i < users.length; i++) {
-// 		const user = users[i];
-// 		// console.log(user);
+	console.log('Length', users.length);
 
-// 		// find user team
-// 		const team = await Team.findOne({ user_id: user._id });
-// 		if (!team) {
-// 			console.log('team not found');
-// 		}
+	// get all active users team
+	for (let i = 0; i < users.length; i++) {
+		const user = users[i];
+		// console.log(user);
 
-// 		// get all level 1 active members
-// 		const level_1_count = await User.countDocuments({
-// 			'parent_1.customer_id': user.customer_id,
-// 			is_active: true,
-// 		});
+		// find user team
+		const team = await Team.findOne({ user_id: user._id });
+		if (!team) {
+			console.log('team not found');
+		}
 
-// 		// get all level 2 active members
-// 		const level_2_count = await User.countDocuments({
-// 			'parent_2.customer_id': user.customer_id,
-// 			is_active: true,
-// 		});
+		// get all level 1 active members
+		const level_1_count = await User.countDocuments({
+			'parent_1.customer_id': user.customer_id,
+			is_active: true,
+		});
 
-// 		// get all level 3 active members
-// 		const level_3_count = await User.countDocuments({
-// 			'parent_3.customer_id': user.customer_id,
-// 			is_active: true,
-// 		});
+		// get all level 2 active members
+		const level_2_count = await User.countDocuments({
+			'parent_2.customer_id': user.customer_id,
+			is_active: true,
+		});
 
-// 		// get all level 4 active members
-// 		const level_4_count = await User.countDocuments({
-// 			'parent_4.customer_id': user.customer_id,
-// 			is_active: true,
-// 		});
+		// get all level 3 active members
+		const level_3_count = await User.countDocuments({
+			'parent_3.customer_id': user.customer_id,
+			is_active: true,
+		});
 
-// 		// get all level 5 active members
-// 		const level_5_count = await User.countDocuments({
-// 			'parent_5.customer_id': user.customer_id,
-// 			is_active: true,
-// 		});
+		// get all level 4 active members
+		const level_4_count = await User.countDocuments({
+			'parent_4.customer_id': user.customer_id,
+			is_active: true,
+		});
 
-// 		const total_members =
-// 			level_1_count +
-// 			level_2_count +
-// 			level_3_count +
-// 			level_4_count +
-// 			level_5_count;
+		// get all level 5 active members
+		const level_5_count = await User.countDocuments({
+			'parent_5.customer_id': user.customer_id,
+			is_active: true,
+		});
 
-// 		// update user rank
-// 		if (user.rank === 'member' && level_1_count >= 5 && total_members >= 30) {
-// 			user.rank_is_processing = true;
-// 			await user.save();
-// 		} else if (
-// 			user.rank === 'premier' &&
-// 			level_1_count >= 8 &&
-// 			total_members >= 50
-// 		) {
-// 			user.rank_is_processing = true;
-// 			await user.save();
-// 		} else if (
-// 			user.rank === 'elite' &&
-// 			level_1_count >= 10 &&
-// 			total_members >= 70
-// 		) {
-// 			user.rank_is_processing = true;
-// 			await user.save();
-// 		} else if (
-// 			user.rank === 'majestic' &&
-// 			level_1_count >= 12 &&
-// 			total_members >= 100
-// 		) {
-// 			user.rank_is_processing = true;
-// 			await user.save();
-// 		} else if (
-// 			user.rank === 'royal' &&
-// 			level_1_count >= 15 &&
-// 			total_members >= 150
-// 		) {
-// 			user.rank_is_processing = true;
-// 			await user.save();
-// 		}
-// 	}
-// });
+		const total_members =
+			level_1_count +
+			level_2_count +
+			level_3_count +
+			level_4_count +
+			level_5_count;
+
+		// console.log(
+		// 	'Name',
+		// 	user.name,
+		// 	'Total Members',
+		// 	total_members,
+		// 	'Level 1',
+		// 	level_1_count
+		// );
+
+		// update user rank
+		if (user.rank === 'member' && level_1_count >= 5 && total_members >= 30) {
+			user.rank_is_processing = true;
+			user.processing_for = 'premier';
+			user.rank_claimed = false;
+			await user.save();
+			// send notification to user
+			const userNotification = await UserNotification.create({
+				user_id: user._id,
+				subject: 'Rank Promotion',
+				description: `Congratulations! You have been promoted to Premier Rank.
+				Please claim your rank bonus.
+				`,
+				url: '/rank-claim',
+			});
+			console.log(userNotification);
+			global.io.emit('user-notification', userNotification);
+		} else if (
+			user.rank === 'premier' &&
+			level_1_count >= 8 &&
+			total_members >= 50
+		) {
+			user.rank_is_processing = true;
+			user.processing_for = 'elite';
+			user.rank_claimed = false;
+			await user.save();
+			// send notification to user
+			const userNotification = await UserNotification.create({
+				user_id: user._id,
+				subject: 'Rank Promotion',
+				description: `Congratulations! You have been promoted to Elite Rank.
+				Please claim your rank bonus.
+				`,
+				url: '/rank-claim',
+			});
+			console.log(userNotification);
+			global.io.emit('user-notification', userNotification);
+		} else if (
+			user.rank === 'elite' &&
+			level_1_count >= 10 &&
+			total_members >= 70
+		) {
+			user.rank_is_processing = true;
+			user.processing_for = 'majestic';
+			user.rank_claimed = false;
+			await user.save();
+			// send notification to user
+			const userNotification = await UserNotification.create({
+				user_id: user._id,
+				subject: 'Rank Promotion',
+				description: `Congratulations! You have been promoted to Majestic Rank.
+				Please claim your rank bonus.
+				`,
+				url: '/rank-claim',
+			});
+			console.log(userNotification);
+			global.io.emit('user-notification', userNotification);
+		} else if (
+			user.rank === 'majestic' &&
+			level_1_count >= 12 &&
+			total_members >= 100
+		) {
+			user.rank_is_processing = true;
+			user.processing_for = 'royal';
+			user.rank_claimed = false;
+			await user.save();
+			// send notification to user
+			const userNotification = await UserNotification.create({
+				user_id: user._id,
+				subject: 'Rank Promotion',
+				description: `Congratulations! You have been promoted to Royal Rank.
+				Please claim your rank bonus.
+				`,
+				url: '/rank-claim',
+			});
+			console.log(userNotification);
+			global.io.emit('user-notification', userNotification);
+		} else if (
+			user.rank === 'royal' &&
+			level_1_count >= 15 &&
+			total_members >= 150
+		) {
+			user.rank_is_processing = true;
+			user.processing_for = 'glorious';
+			user.rank_claimed = false;
+			await user.save();
+			// send notification to user
+			const userNotification = await UserNotification.create({
+				user_id: user._id,
+				subject: 'Rank Promotion',
+				description: `Congratulations! You have been promoted to Glorious Rank.
+				Please claim your rank bonus.
+				`,
+				url: '/rank-claim',
+			});
+			console.log(userNotification);
+			global.io.emit('user-notification', userNotification);
+		}
+	}
+});
+
+// update all users rank_is_processing: false
+exports.updateAllUsersRankIsProcessing = catchAsyncErrors(
+	async (req, res, next) => {
+		const users = await User.find();
+		if (!users) {
+			console.log('users not found');
+		}
+
+		for (let i = 0; i < users.length; i++) {
+			const user = users[i];
+			user.rank_is_processing = false;
+			await user.save();
+		}
+
+		res.status(200).json({
+			success: true,
+			message: 'All users rank_is_processing: false updated successfully',
+		});
+	}
+);
+
+// claim rank bonus
+exports.claimRankBonus = catchAsyncErrors(async (req, res, next) => {
+	const user = await User.findById(req.user._id);
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
+
+	let numAmount = 0;
+	if (user.processing_for === 'premier') {
+		numAmount = 50;
+	} else if (user.processing_for === 'elite') {
+		numAmount = 100;
+	} else if (user.processing_for === 'majestic') {
+		numAmount = 200;
+	} else if (user.processing_for === 'royal') {
+		numAmount = 300;
+	} else if (user.processing_for === 'glorious') {
+		numAmount = 500;
+	}
+
+	// check if user rank_is_processing: true
+	if (user.rank_is_processing === false) {
+		return next(new ErrorHandler('Please wait for rank update', 400));
+	}
+
+	// check if user rank_claimed: true
+	if (user.rank_claimed === true) {
+		return next(new ErrorHandler('Rank bonus already claimed', 400));
+	}
+
+	// update user rank_claimed: true
+	user.m_balance += numAmount;
+	createTransaction(
+		user._id,
+		'cashIn',
+		numAmount,
+		'bonus',
+		`Rank Bonus from Glomax rank of ${user.processing_for}`
+	);
+	user.b_balance += numAmount;
+	user.rank_claimed = true;
+	user.rank_is_processing = false;
+	user.rank = user.processing_for;
+	user.processing_for = null;
+	user.rank_details = {
+		rank: user.processing_for,
+		achieved_date: Date.now(),
+		amount: numAmount,
+	};
+	await user.save();
+
+	// find company
+	const company = await Company.findOne();
+	if (!company) {
+		return next(new ErrorHandler('Company not found', 404));
+	}
+
+	// update company
+
+	company.cost.total_cost += numAmount;
+	await company.save();
+
+	console.log('rank bonus claimed', user.name);
+	res.status(200).json({
+		success: true,
+		message: 'Rank bonus claimed successfully',
+	});
+});

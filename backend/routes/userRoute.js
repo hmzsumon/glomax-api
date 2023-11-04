@@ -26,6 +26,8 @@ const {
 	getTransactions,
 	getAdminTransactions,
 	addParent4And5,
+	updateAllUsersRankIsProcessing,
+	claimRankBonus,
 } = require('../controllers/userController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -127,5 +129,13 @@ router
 
 // add parent 4 and 5
 router.route('/add-parent-4-and-5').put(addParent4And5);
+
+// update all users rank is processing
+router
+	.route('/update-all-users-rank-is-processing')
+	.put(updateAllUsersRankIsProcessing);
+
+// claim rank bonus
+router.route('/claim-rank-bonus').put(isAuthenticatedUser, claimRankBonus);
 
 module.exports = router;
