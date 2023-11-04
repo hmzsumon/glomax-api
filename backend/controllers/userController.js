@@ -1773,7 +1773,7 @@ exports.addParent4And5 = catchAsyncErrors(async (req, res, next) => {
 });
 
 // every 1 minute corn job
-cron.schedule('* * * * *', async () => {
+cron.schedule('0 0 * * *', async () => {
 	// get all active users
 	const users = await User.find({ is_active: true, rank_is_processing: false });
 	if (!users) {
