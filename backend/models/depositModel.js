@@ -67,6 +67,9 @@ const depositSchema = new mongoose.Schema(
 			type: Boolean,
 			default: false,
 		},
+		sl_no: {
+			type: Number,
+		},
 	},
 	{
 		timestamps: true,

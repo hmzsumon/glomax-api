@@ -54,6 +54,9 @@ exports.createDeposit = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('Transaction ID already exist', 405));
 	}
 
+	// sl_no for deposit
+	const sl_no = (await Deposit.countDocuments({})) + 1;
+
 	const newDeposit = await Deposit.create({
 		user_id: user._id,
 		customer_id: user.customer_id,
@@ -62,6 +65,7 @@ exports.createDeposit = catchAsyncErrors(async (req, res, next) => {
 		amount: numAmount,
 		transactionId,
 		is_bonus,
+		sl_no,
 	});
 
 	// update user is_deposit_requested
@@ -550,5 +554,18 @@ exports.rejectDeposit = catchAsyncErrors(async (req, res, next) => {
 	res.status(200).json({
 		success: true,
 		message: 'Deposit rejected',
+	});
+});
+
+// add all deposits sl_no
+exports.addSlNo = catchAsyncErrors(async (req, res, next) => {
+	const deposits = await Deposit.find();
+	for (let i = 0; i < deposits.length; i++) {
+		deposits[i].sl_no = i + 1;
+		await deposits[i].save();
+	}
+	res.status(200).json({
+		success: true,
+		message: 'Sl no added successfully',
 	});
 });
