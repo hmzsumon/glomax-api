@@ -191,6 +191,9 @@ const withdrawSchema = new mongoose.Schema(
 			type: Boolean,
 			default: true,
 		},
+		sl_no: {
+			type: Number,
+		},
 	},
 	{
 		timestamps: true,

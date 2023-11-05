@@ -8,6 +8,7 @@ const {
 	getWithdrawForAdmin,
 	approveWithdraw,
 	cancelWithdraw,
+	addSlNo,
 } = require('../controllers/withdrawController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 
@@ -52,5 +53,8 @@ router
 router
 	.route('/withdraw/cancel')
 	.put(isAuthenticatedUser, authorizeRoles('admin', 'manager'), cancelWithdraw);
+
+// Add serial number to withdraw => /api/v1/admin/withdraw/:id/add-sl-no
+router.route('/withdraw/add-sl-no').put(addSlNo);
 
 module.exports = router;

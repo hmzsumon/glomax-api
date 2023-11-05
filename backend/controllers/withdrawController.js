@@ -81,6 +81,9 @@ exports.newWithdrawRequest = catchAsyncErrors(async (req, res, next) => {
 	);
 	user.is_withdraw_requested = true;
 
+	// sl_no
+	const sl_no = await Withdraw.countDocuments();
+
 	// create new withdraw request
 	const withdraw = await Withdraw.create({
 		user_id: req.user.id,
@@ -92,6 +95,7 @@ exports.newWithdrawRequest = catchAsyncErrors(async (req, res, next) => {
 		net_amount,
 		charge,
 		method,
+		sl_no: sl_no + 1,
 	});
 	await user.save();
 
@@ -401,5 +405,23 @@ exports.cancelWithdraw = catchAsyncErrors(async (req, res, next) => {
 	res.status(200).json({
 		success: true,
 		message: 'Withdraw request cancelled successfully',
+	});
+});
+
+// add all withdraw sl no
+exports.addSlNo = catchAsyncErrors(async (req, res, next) => {
+	const withdraws = await Withdraw.find();
+	if (!withdraws) {
+		return next(new ErrorHandler('Withdraw requests not found', 404));
+	}
+
+	for (let i = 0; i < withdraws.length; i++) {
+		withdraws[i].sl_no = i + 1;
+		await withdraws[i].save();
+	}
+
+	res.status(200).json({
+		success: true,
+		message: 'Withdraw requests sl no added successfully',
 	});
 });
