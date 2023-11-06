@@ -12,6 +12,7 @@ const {
 	approveDeposit,
 	rejectDeposit,
 	addSlNo,
+	getDepositByTransactionId,
 } = require('../controllers/depositController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 const upload = multer({});
@@ -62,4 +63,7 @@ router.put(
 
 // add sl no
 router.put('/deposit/add/sl-no', addSlNo);
+
+// get deposit by transaction id
+router.get('/demo-deposits', getDepositByTransactionId);
 module.exports = router;

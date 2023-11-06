@@ -537,6 +537,10 @@ exports.rejectDeposit = catchAsyncErrors(async (req, res, next) => {
 	}
 	await depositDetails.save();
 
+	//update user
+	user.is_deposit_requested = false;
+	await user.save();
+
 	// update company balance
 	company.deposit.new_deposit_amount -= deposit.amount;
 	company.deposit.new_deposit_count -= 1;
@@ -567,5 +571,28 @@ exports.addSlNo = catchAsyncErrors(async (req, res, next) => {
 	res.status(200).json({
 		success: true,
 		message: 'Sl no added successfully',
+	});
+});
+
+// get all deposits by transactionId start Demo lower  case or upper case
+exports.getDepositByTransactionId = catchAsyncErrors(async (req, res, next) => {
+	const deposits = await Deposit.find();
+
+	console.log(deposits.length);
+
+	// filter by transactionId start with Demo lower case or upper case
+	const demoDeposit = deposits.filter((deposit) => {
+		return deposit.transactionId.startsWith('demo');
+	});
+
+	// update all demo deposit is_demo = true
+	for (let i = 0; i < demoDeposit.length; i++) {
+		demoDeposit[i].is_demo = true;
+		await demoDeposit[i].save();
+	}
+
+	res.status(200).json({
+		success: true,
+		demoDeposit,
 	});
 });
