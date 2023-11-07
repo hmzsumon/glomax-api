@@ -55,7 +55,7 @@ exports.newAiRobot = catchAsyncErrors(async (req, res, next) => {
 		pair,
 		grid_no,
 		price_range,
-		profit_percent: '3.5% - 5%',
+		profit_percent: '4% - 10%',
 		last_price,
 		open_time: Date.now(),
 		close_time,

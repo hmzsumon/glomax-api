@@ -1070,6 +1070,22 @@ exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('Team not found', 404));
 	}
 
+	const allTeamIds = [
+		...team.level_1,
+		...team.level_2,
+		...team.level_3,
+		...team.level_4,
+		...team.level_5,
+	];
+
+	// find all team members
+	const allTeamMembers = await User.find({ _id: { $in: allTeamIds } }).select(
+		'-password'
+	);
+
+	// filter active members
+	const activeMembers = allTeamMembers.filter((member) => member.is_active);
+
 	// get ai robotRecord
 	const aiRobotRecord = await AiRobotRecord.findOne({ user_id: user._id });
 	if (!aiRobotRecord) {
@@ -1116,6 +1132,8 @@ exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {
 		success: true,
 		user,
 		team,
+		activeMembers: activeMembers.length,
+		allTeamMembers: allTeamMembers.length,
 		aiRobotRecord,
 		convertRecord,
 		depositDetails,

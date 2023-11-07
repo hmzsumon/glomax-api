@@ -425,3 +425,83 @@ exports.addSlNo = catchAsyncErrors(async (req, res, next) => {
 		message: 'Withdraw requests sl no added successfully',
 	});
 });
+
+// reject withdraw request => /api/v1/admin/withdraw/:id/reject
+
+exports.rejectWithdraw = catchAsyncErrors(async (req, res, next) => {
+	// find admin
+	const admin = await User.findById(req.user.id);
+	if (!admin) {
+		return next(new ErrorHandler('Admin not found', 404));
+	}
+
+	// find withdraw request
+	const withdraw = await Withdraw.findById(req.body.id);
+	if (!withdraw) {
+		return next(new ErrorHandler('Withdraw request not found', 404));
+	}
+
+	// check if withdraw request is already approved
+	if (withdraw.is_rejected) {
+		return next(new ErrorHandler('Withdraw request already Rejected', 400));
+	}
+
+	// find withdraw details
+	const withdrawDetails = await WithdrawDetails.findOne({
+		user_id: withdraw.user_id,
+	});
+
+	if (!withdrawDetails) {
+		return next(
+			new ErrorHandler('Something went wrong. Please try again!', 901)
+		);
+	}
+	// find user
+	const user = await User.findById(withdraw.user_id);
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
+
+	// find company
+	const company = await Company.findOne();
+	if (!company) {
+		return next(new ErrorHandler('Company not found', 404));
+	}
+
+	// update withdraw request
+	withdraw.is_rejected = true;
+	withdraw.rejected_by = admin._id;
+	withdraw.rejected_at = Date.now();
+	withdraw.status = 'rejected';
+	withdraw.rejected_reason = req.body.reason;
+	withdraw.comment = req.body.reason;
+	await withdraw.save();
+
+	// update user balance
+	user.is_withdraw_requested = false;
+	user.m_balance += withdraw.amount;
+	createTransaction(
+		user._id,
+		'cashIn',
+		withdraw.amount,
+		'withdraw',
+		`Withdraw request of ${numAmount} was rejected`
+	);
+
+	await user.save();
+
+	// create new notification
+	const userNotification = await UserNotification.create({
+		user_id: user._id,
+		subject: 'Withdraw request rejected',
+		description: `Your withdraw request of ${withdraw.amount} was rejected`,
+		url: `/withdraw`,
+	});
+
+	global.io.emit('user-notification', userNotification);
+
+	res.status(200).json({
+		success: true,
+		message: 'Withdraw request rejected successfully',
+	});
+});
