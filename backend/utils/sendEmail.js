@@ -13,7 +13,7 @@ const sendEmail = async (option) => {
 		sendSmtpEmail.htmlContent = option.html;
 		sendSmtpEmail.sender = {
 			name: 'Glomax',
-			email: 'glomaxservice24@gmail.com',
+			email: 'support@glomax.org',
 		};
 		sendSmtpEmail.to = [{ email: option.email }];
 		await apiInstance.sendTransacEmail(sendSmtpEmail);
