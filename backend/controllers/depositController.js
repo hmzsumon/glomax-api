@@ -362,7 +362,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		company.users.total_active_users += 1;
 		company.users.new_users -= 1;
 
-		console.log('new user p-1', parent_1.name);
+		// console.log('new user p-1', parent_1.name);
 	}
 
 	// update deposit details

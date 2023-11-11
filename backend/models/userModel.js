@@ -379,6 +379,11 @@ const userSchema = new mongoose.Schema(
 			default: false,
 		},
 
+		is_can_withdraw: {
+			type: Boolean,
+			default: false,
+		},
+
 		resetPasswordToken: String,
 		resetPasswordExpire: Date,
 	},

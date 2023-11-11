@@ -12,6 +12,7 @@ const Notification = require('../models/notificationModel');
 const { sendEmail } = require('../utils/sendEmail');
 const Withdraw = require('../models/withdraw');
 const UserNotification = require('../models/userNotification');
+const AiRobot = require('../models/aiRobotModel');
 
 // Create new withdraw request => /api/v1/withdraw/new
 exports.newWithdrawRequest = catchAsyncErrors(async (req, res, next) => {
@@ -29,6 +30,21 @@ exports.newWithdrawRequest = catchAsyncErrors(async (req, res, next) => {
 	// check if user has enough balance
 	if (user.m_balance < numAmount) {
 		return next(new ErrorHandler('Insufficient balance', 400));
+	}
+
+	// check user has any ai robot status is completed
+	const aiRobot = await AiRobot.findOne({
+		user_id: user._id,
+		status: 'completed',
+	});
+
+	if (!aiRobot) {
+		return next(
+			new ErrorHandler(
+				'You have to complete at least one AI Robot to withdraw',
+				400
+			)
+		);
 	}
 
 	// check if user has pending withdraw request
@@ -430,7 +446,7 @@ exports.addSlNo = catchAsyncErrors(async (req, res, next) => {
 
 exports.rejectWithdraw = catchAsyncErrors(async (req, res, next) => {
 	// find admin
-	const admin = await User.findById(req.user.id);
+	const admin = await User.findById(req.user._id);
 	if (!admin) {
 		return next(new ErrorHandler('Admin not found', 404));
 	}
@@ -485,7 +501,7 @@ exports.rejectWithdraw = catchAsyncErrors(async (req, res, next) => {
 		'cashIn',
 		withdraw.amount,
 		'withdraw',
-		`Withdraw request of ${numAmount} was rejected`
+		`Withdraw request of ${withdraw.amount} was rejected`
 	);
 
 	await user.save();
