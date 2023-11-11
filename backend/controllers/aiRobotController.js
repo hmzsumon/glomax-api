@@ -316,7 +316,7 @@ async function updateInactiveAiRobots() {
 }
 
 // Schedule the cron job to run every 1 minute
-cron.schedule('* * * * *', () => {
+cron.schedule('*/5 * * * *', () => {
 	console.log('Checking AiRobots...');
 	updateInactiveAiRobots();
 });
