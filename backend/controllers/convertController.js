@@ -27,11 +27,15 @@ exports.convert = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// find convert record by user id
-	const convertRecord = await ConvertRecord.findOne({ user_id: user._id });
+	let convertRecord = await ConvertRecord.findOne({ user_id: user._id });
 	if (!convertRecord) {
-		return next(new ErrorHandler('Convert record not found', 404));
+		// create convert record
+		convertRecord = await ConvertRecord.create({
+			user_id: user._id,
+			customer_id: user.customer_id,
+			username: user.username,
+		});
 	}
-
 	// find company
 	const company = await Company.findById(companyId);
 	if (!company) {
