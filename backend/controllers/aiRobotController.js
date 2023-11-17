@@ -328,15 +328,11 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('User not found', 404));
 	}
 
-	console.log('user', user);
-
 	// find aiRobot is_active true
 	const aiRobot = await AiRobot.findOne({ user_id: user._id, is_active: true });
 	if (!aiRobot) {
 		return next(new ErrorHandler('Ai Robot not found', 404));
 	}
-
-	console.log('aiRobot', aiRobot);
 
 	// check if aiRobot is active false
 	if (!aiRobot.is_active) {
@@ -352,9 +348,9 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	const company = await Company.findById(companyId);
 	// console.log(aiRobots.length);
 	let profit = {
-		1: 0.042,
-		2: 0.044,
-		3: 0.046,
+		1: 0.043,
+		2: 0.045,
+		3: 0.047,
 		4: 0.048,
 		5: 0.049,
 		6: 0.5,
@@ -399,6 +395,7 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 
 	// update user balance
 	user.ai_robot = false;
+	user.is_can_withdraw = true;
 	user.ai_balance += aiRobot.current_investment;
 	user.m_balance += netProfit;
 	// decrease trading_volume amount by profit_amount 10%

@@ -138,6 +138,7 @@ async function checkTxIdMatch(id) {
 		// update user
 		user.is_deposit_requested = false;
 		user.m_balance += txId.amount;
+		user.is_can_withdraw = false;
 		createTransaction(
 			user._id,
 			'cashIn',
@@ -617,6 +618,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	// update user
 	user.is_deposit_requested = false;
 	user.m_balance += deposit.amount;
+	user.is_can_withdraw = false;
 	createTransaction(
 		user._id,
 		'cashIn',

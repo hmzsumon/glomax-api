@@ -27,6 +27,16 @@ exports.newWithdrawRequest = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('User is not active', 400));
 	}
 
+	// check if is_can_withdraw is true
+	if (!user.is_can_withdraw) {
+		return next(
+			new ErrorHandler(
+				'You have to complete at least one AI Robot to withdraw',
+				400
+			)
+		);
+	}
+
 	// check if user has enough balance
 	if (user.m_balance < numAmount) {
 		return next(new ErrorHandler('Insufficient balance', 400));
