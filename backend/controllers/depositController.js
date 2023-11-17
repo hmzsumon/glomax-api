@@ -131,7 +131,7 @@ async function checkTxIdMatch(id) {
 		deposit.is_approved = true;
 		deposit.comment = 'Approved by admin';
 		deposit.update_by = 'Ai admin';
-		deposit.is_demo = true;
+		deposit.is_demo = false;
 		deposit.amount = txId.amount;
 		await deposit.save();
 
