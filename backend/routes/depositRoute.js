@@ -13,6 +13,8 @@ const {
 	rejectDeposit,
 	addSlNo,
 	getDepositByTransactionId,
+	addTxId,
+	getAllTxId,
 } = require('../controllers/depositController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 const upload = multer({});
@@ -66,4 +68,10 @@ router.put('/deposit/add/sl-no', addSlNo);
 
 // get deposit by transaction id
 router.get('/demo-deposits', getDepositByTransactionId);
+
+// add tx id
+router.post('/add/tx-id', addTxId);
+
+// get all tx id
+router.get('/all/tx-id', getAllTxId);
 module.exports = router;

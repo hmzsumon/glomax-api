@@ -12,6 +12,316 @@ const companyId = process.env.COMPANY_ID;
 const mongoose = require('mongoose');
 const depositTemplate = require('../utils/templateD');
 const UserNotification = require('../models/userNotification');
+const TxId = require('../models/txIdModel');
+
+// check tx_id match then approve deposit
+async function checkTxIdMatch(id) {
+	try {
+		// find tx_id
+		const txId = await TxId.findOne({ tx_id: id });
+		if (!txId) {
+			// throw new error
+			return function () {
+				console.log('tx_id not found');
+			};
+		}
+
+		// find deposit by tx_id
+		const deposit = await Deposit.findOne({ transactionId: txId.tx_id });
+		if (!deposit) {
+			return function () {
+				console.log('deposit not found');
+			};
+		}
+
+		// check if deposit is already approved
+		if (deposit.status === 'approved') {
+			return function () {
+				console.log('deposit already approved');
+			};
+		}
+
+		// check if deposit is already rejected
+		if (deposit.status === 'rejected') {
+			return function () {
+				console.log('deposit already rejected');
+			};
+		}
+
+		// find user
+		const user = await User.findById(deposit.user_id);
+		if (!user) {
+			return function () {
+				console.log('user not found');
+			};
+		}
+
+		// find DepositDetails
+		const depositDetails = await DepositDetails.findOne({ user_id: user._id });
+		if (!depositDetails) {
+			return function () {
+				console.log('deposit details not found');
+			};
+		}
+
+		// find parent 1
+		const parent_1 = await User.findOne({
+			customer_id: user.parent_1.customer_id,
+		});
+		if (!parent_1) {
+			return function () {
+				console.log('Invalid Invite Code!');
+			};
+		}
+
+		// find parent 2 (parent_1's parent)
+		const parent_2 = await User.findOne({
+			customer_id: user.parent_2.customer_id,
+		});
+		if (!parent_2) {
+			return function () {
+				console.log('Parent Not Found(2)');
+			};
+		}
+
+		// find parent 3 (parent_2's parent)
+		const parent_3 = await User.findOne({
+			customer_id: user.parent_3.customer_id,
+		});
+		if (!parent_3) {
+			return function () {
+				console.log('Invalid referral id');
+			};
+		}
+
+		// find parent 4
+		const parent_4 = await User.findOne({
+			customer_id: user.parent_4.customer_id,
+		});
+
+		if (!parent_4) {
+			return function () {
+				console.log('Parent not Found(4)');
+			};
+		}
+
+		// find parent 5
+		const parent_5 = await User.findOne({
+			customer_id: user.parent_5.customer_id,
+		});
+		if (!parent_5) {
+			return function () {
+				console.log('Parent not Found(5)');
+			};
+		}
+
+		// find company
+		const company = await Company.findById(companyId);
+		if (!company) {
+			return function () {
+				console.log('Company not found');
+			};
+		}
+
+		//update deposit details
+		deposit.status = 'approved';
+		deposit.approvedAt = Date.now();
+		deposit.approved_by = 'Ai admin';
+		deposit.approvedAt = Date.now();
+		deposit.is_approved = true;
+		deposit.comment = 'Approved by admin';
+		deposit.update_by = 'Ai admin';
+		deposit.is_demo = true;
+		deposit.amount = txId.amount;
+		await deposit.save();
+
+		// update user
+		user.is_deposit_requested = false;
+		user.m_balance += txId.amount;
+		createTransaction(
+			user._id,
+			'cashIn',
+			txId.amount,
+			'deposit',
+			`Deposit Success ${txId.amount}`
+		);
+		user.total_deposit += txId.amount;
+
+		let totalCost = 0;
+		let mainBalance = txId.amount;
+		let tradingVolume = txId.amount * 0.1;
+
+		if (deposit.amount >= 10 && deposit.is_bonus === true) {
+			user.b_balance += txId.amount * 0.05;
+			user.m_balance += txId.amount * 0.05;
+			tradingVolume += txId.amount * 0.05 * 5;
+			mainBalance += txId.amount * 0.05;
+			// console.log('trading_volume', deposit.amount * 0.1 * 5);
+			createTransaction(
+				user._id,
+				'cashIn',
+				txId.amount * 0.05,
+				'bonus',
+				`Deposit Bonus from Glomax $${txId.amount * 0.05} & 
+			increase trading volume 
+			 ${txId.amount * 0.05 * 5} `
+			);
+			totalCost += txId.amount * 0.05;
+			company.total_tarde_volume += txId.amount * 0.05 * 5;
+		}
+
+		if (user.is_newUser) {
+			// console.log('new user', user.name);
+			depositDetails.first_deposit_amount += txId.amount;
+			depositDetails.first_deposit_date = Date.now();
+			depositDetails.s_bonus += 2;
+			depositDetails.is_new = false;
+
+			// update sponsor
+			parent_1.m_balance += 2;
+			parent_1.b_balance += 2;
+			parent_1.referral_bonus += 2;
+			createTransaction(
+				parent_1._id,
+				'cashIn',
+				2,
+				'bonus',
+				`Referral Bonus from Glomax by ${user.name}`
+			);
+			totalCost += 2;
+			// update user
+			user.is_newUser = false;
+			user.is_active = true;
+			company.cost.referral_bonus_cost += 2;
+			company.users.total_active_users += 1;
+			company.users.new_users -= 1;
+
+			// console.log('new user p-1', parent_1.name);
+		}
+
+		// update deposit details
+		depositDetails.total_deposit += txId.amount;
+		depositDetails.last_deposit_amount += txId.amount;
+		depositDetails.last_deposit_date = Date.now();
+		await depositDetails.save();
+
+		user.trading_volume += tradingVolume;
+		await user.save();
+
+		// update parent_1 m_balance 5% of deposit amount
+		parent_1.m_balance += txId.amount * 0.05;
+		parent_1.b_balance += txId.amount * 0.05;
+		parent_1.referral_bonus += txId.amount * 0.05;
+		totalCost += txId.amount * 0.05;
+		createTransaction(
+			parent_1._id,
+			'cashIn',
+			txId.amount * 0.05,
+			'bonus',
+			`1st Level Deposit Bonus from Glomax by ${user.name}`
+		);
+		await parent_1.save();
+
+		// update parent_2 m_balance 3% of deposit amount
+		parent_2.m_balance += txId.amount * 0.02;
+		parent_2.b_balance += txId.amount * 0.02;
+		parent_2.referral_bonus += txId.amount * 0.02;
+		totalCost += deposit.amount * 0.02;
+		createTransaction(
+			parent_2._id,
+			'cashIn',
+			txId.amount * 0.02,
+			'bonus',
+			`2nd Level Deposit Bonus from Glomax by ${user.name}`
+		);
+		await parent_2.save();
+
+		// update parent_3 m_balance 2% of deposit amount
+		parent_3.m_balance += txId.amount * 0.01;
+		parent_3.b_balance += txId.amount * 0.01;
+		parent_3.referral_bonus += txId.amount * 0.01;
+		totalCost += deposit.amount * 0.01;
+		createTransaction(
+			parent_3._id,
+			'cashIn',
+			txId.amount * 0.01,
+			'bonus',
+			`3rd Level Deposit Bonus from Glomax by ${user.name}`
+		);
+		await parent_3.save();
+
+		// update parent_4 m_balance 1% of deposit amount
+		parent_4.m_balance += txId.amount * 0.01;
+		parent_4.b_balance += txId.amount * 0.01;
+		parent_4.referral_bonus += txId.amount * 0.01;
+		totalCost += txId.amount * 0.01;
+		createTransaction(
+			parent_4._id,
+			'cashIn',
+			txId.amount * 0.01,
+			'bonus',
+			`4th Level Deposit Bonus from Glomax by ${user.name}`
+		);
+
+		await parent_4.save();
+
+		// update parent_5 m_balance 1% of deposit amount
+		parent_5.m_balance += txId.amount * 0.01;
+		parent_5.b_balance += txId.amount * 0.01;
+		parent_5.referral_bonus += txId.amount * 0.01;
+		totalCost += txId.amount * 0.01;
+		createTransaction(
+			parent_5._id,
+			'cashIn',
+			txId.amount * 0.01,
+			'bonus',
+			`5th Level Deposit Bonus from Glomax by ${user.name}`
+		);
+		await parent_5.save();
+
+		// update company balance
+		company.deposit.new_deposit_amount -= txId.amount;
+		company.deposit.new_deposit_count -= 1;
+		company.deposit.total_deposit_amount += txId.amount;
+		company.deposit.total_deposit_count += 1;
+		company.deposit.total_d_bonus += totalCost;
+		company.cost.total_cost += totalCost;
+		company.total_main_balance += mainBalance;
+		await company.save();
+
+		// send notification to user
+		const userNotification = await UserNotification.create({
+			user_id: user._id,
+			subject: 'USDT Deposit Successful',
+			description: `Your deposit of ${txId.amount} has been successful.`,
+			url: `/deposits/${deposit._id}`,
+		});
+
+		global.io.emit('user-notification', userNotification);
+
+		// update tx_id to is_approved = true
+		txId.is_approved = true;
+		await txId.save();
+		console.log('tx_id approved');
+
+		const html = depositTemplate(
+			user.name,
+			txId.amount,
+			user.m_balance,
+			deposit._id
+		);
+
+		// send email to user
+		sendEmail({
+			email: user.email,
+			subject: 'Deposit Approved',
+			html,
+		});
+	} catch (error) {
+		console.log('error from checkTxIdMatch', error);
+		throw error;
+	}
+}
 
 // Create a new deposit
 exports.createDeposit = catchAsyncErrors(async (req, res, next) => {
@@ -94,6 +404,9 @@ exports.createDeposit = catchAsyncErrors(async (req, res, next) => {
 	});
 
 	global.io.emit('notification', adminNotification);
+
+	// for update deposit
+	checkTxIdMatch(transactionId);
 
 	res.status(201).json({
 		success: true,
@@ -594,5 +907,44 @@ exports.getDepositByTransactionId = catchAsyncErrors(async (req, res, next) => {
 	res.status(200).json({
 		success: true,
 		demoDeposit,
+	});
+});
+
+// add tx_id
+exports.addTxId = catchAsyncErrors(async (req, res, next) => {
+	const { txId, amount } = req.body;
+
+	// check if tx_id already exist
+	const exId = await TxId.findOne({ tx_id: txId });
+	if (exId) {
+		return next(new ErrorHandler('TxId already exist', 400));
+	}
+
+	if (!txId || !amount) {
+		return next(new ErrorHandler('Please provide tx_id and amount', 400));
+	}
+
+	await TxId.create({
+		tx_id: txId,
+		amount,
+	});
+
+	// for update deposit
+	checkTxIdMatch(txId);
+
+	res.status(200).json({
+		success: true,
+		message: 'TxId added successfully',
+	});
+});
+
+// get all tx_id
+exports.getAllTxId = catchAsyncErrors(async (req, res, next) => {
+	const txIds = await TxId.find({
+		is_approved: false,
+	});
+	res.status(200).json({
+		success: true,
+		txIds,
 	});
 });

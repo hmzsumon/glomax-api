@@ -328,11 +328,15 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('User not found', 404));
 	}
 
+	console.log('user', user);
+
 	// find aiRobot is_active true
 	const aiRobot = await AiRobot.findOne({ user_id: user._id, is_active: true });
 	if (!aiRobot) {
 		return next(new ErrorHandler('Ai Robot not found', 404));
 	}
+
+	console.log('aiRobot', aiRobot);
 
 	// check if aiRobot is active false
 	if (!aiRobot.is_active) {
