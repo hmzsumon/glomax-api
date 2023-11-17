@@ -28,6 +28,9 @@ const {
 	addParent4And5,
 	updateAllUsersRankIsProcessing,
 	claimRankBonus,
+	updateAllUsersIsBlock,
+	changeUserStatus,
+	changeBlockStatus,
 } = require('../controllers/userController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -137,5 +140,14 @@ router
 
 // claim rank bonus
 router.route('/claim-rank-bonus').put(isAuthenticatedUser, claimRankBonus);
+
+// update all users is block
+router.route('/update-all-users-is-block').put(updateAllUsersIsBlock);
+
+// change user status
+router.route('/change-user-status').put(changeUserStatus);
+
+// change block status
+router.route('/change-block-status').put(changeBlockStatus);
 
 module.exports = router;

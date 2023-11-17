@@ -2047,3 +2047,68 @@ exports.claimRankBonus = catchAsyncErrors(async (req, res, next) => {
 		message: 'Rank bonus claimed successfully',
 	});
 });
+
+// add all users is_block: false
+exports.updateAllUsersIsBlock = catchAsyncErrors(async (req, res, next) => {
+	const users = await User.find();
+	if (!users) {
+		console.log('users not found');
+	}
+
+	for (let i = 0; i < users.length; i++) {
+		const user = users[i];
+		user.is_block = false;
+		await user.save();
+	}
+
+	res.status(200).json({
+		success: true,
+		message: 'All users is_block: false updated successfully',
+	});
+});
+
+// change user status by user id
+exports.changeUserStatus = catchAsyncErrors(async (req, res, next) => {
+	const { user_id, status } = req.body;
+	// console.log(user_id, status);
+
+	// find user
+	const user = await User.findById(user_id);
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
+
+	// console.log(user.full_name);
+
+	// update user status
+	user.is_active = status;
+	await user.save();
+
+	res.status(200).json({
+		success: true,
+		message: 'User status updated successfully',
+	});
+});
+
+// change block status by user id
+exports.changeBlockStatus = catchAsyncErrors(async (req, res, next) => {
+	const { user_id, block } = req.body;
+	// console.log(user_id, block);
+
+	// find user
+	const user = await User.findById(user_id);
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
+
+	// console.log(user.full_name);
+
+	// update user status
+	user.is_block = block;
+	await user.save();
+
+	res.status(200).json({
+		success: true,
+		message: 'User block status updated successfully',
+	});
+});

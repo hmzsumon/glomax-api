@@ -384,6 +384,11 @@ const userSchema = new mongoose.Schema(
 			default: false,
 		},
 
+		is_block: {
+			type: Boolean,
+			default: false,
+		},
+
 		resetPasswordToken: String,
 		resetPasswordExpire: Date,
 	},
