@@ -25,6 +25,7 @@ const securityTemplate = require('../utils/templateS');
 const Company = require('../models/companyModel');
 const companyId = process.env.COMPANY_ID;
 const cron = require('node-cron');
+const RankRecord = require('../models/rankRecord');
 
 //======================================
 //seed user => /api/v1/seed/user
@@ -481,6 +482,13 @@ exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
 		user_id: user._id,
 		customer_id: user.customer_id,
 		name: user.name,
+	});
+
+	// create rank record
+	await RankRecord.create({
+		customer_id: user.customer_id,
+		username: user.username,
+		user_id: user._id,
 	});
 
 	// update parent 1
@@ -1791,7 +1799,7 @@ exports.addParent4And5 = catchAsyncErrors(async (req, res, next) => {
 });
 
 // every 1 minute corn job
-cron.schedule('0 * * * *', async () => {
+cron.schedule('* * * * *', async () => {
 	// get all active users
 	const users = await User.find({ is_active: true, rank_is_processing: false });
 	if (!users) {
@@ -1805,6 +1813,16 @@ cron.schedule('0 * * * *', async () => {
 		const user = users[i];
 		// console.log(user);
 
+		// create rank record if not exist
+		let rankRecord = await RankRecord.findOne({ user_id: user._id });
+		if (!rankRecord) {
+			rankRecord = await RankRecord.create({
+				user_id: user._id,
+				customer_id: user.customer_id,
+				username: user.username,
+			});
+		}
+
 		// find user team
 		const team = await Team.findOne({ user_id: user._id });
 		if (!team) {
@@ -1813,6 +1831,12 @@ cron.schedule('0 * * * *', async () => {
 
 		// get all level 1 active members
 		const level_1_count = await User.countDocuments({
+			'parent_1.customer_id': user.customer_id,
+			is_active: true,
+		});
+
+		// find level 1 members
+		const level_1_members = await User.find({
 			'parent_1.customer_id': user.customer_id,
 			is_active: true,
 		});
@@ -1857,12 +1881,28 @@ cron.schedule('0 * * * *', async () => {
 		// 	level_1_count
 		// );
 
+		// for rank marvelous
+		const gloriousUsers = level_1_members.filter(
+			(member) => member.rank === 'glorious'
+		);
+
+		// for rank supreme
+		const marvelousUsers = level_1_members.filter(
+			(member) => member.rank === 'marvelous'
+		);
+
 		// update user rank
 		if (user.rank === 'member' && level_1_count >= 5 && total_members >= 30) {
 			user.rank_is_processing = true;
 			user.processing_for = 'premier';
 			user.rank_claimed = false;
 			await user.save();
+
+			// update rank record
+			rankRecord.current_rank = 'premier';
+			rankRecord.current_rank_amount = 50;
+			await rankRecord.save();
+
 			// send notification to user
 			const userNotification = await UserNotification.create({
 				user_id: user._id,
@@ -1883,6 +1923,11 @@ cron.schedule('0 * * * *', async () => {
 			user.processing_for = 'elite';
 			user.rank_claimed = false;
 			await user.save();
+
+			// update rank record
+			rankRecord.current_rank = 'elite';
+			rankRecord.current_rank_amount = 100;
+			await rankRecord.save();
 			// send notification to user
 			const userNotification = await UserNotification.create({
 				user_id: user._id,
@@ -1903,6 +1948,11 @@ cron.schedule('0 * * * *', async () => {
 			user.processing_for = 'majestic';
 			user.rank_claimed = false;
 			await user.save();
+
+			// update rank record
+			rankRecord.current_rank = 'majestic';
+			rankRecord.current_rank_amount = 200;
+			await rankRecord.save();
 			// send notification to user
 			const userNotification = await UserNotification.create({
 				user_id: user._id,
@@ -1923,6 +1973,11 @@ cron.schedule('0 * * * *', async () => {
 			user.processing_for = 'royal';
 			user.rank_claimed = false;
 			await user.save();
+
+			// update rank record
+			rankRecord.current_rank = 'royal';
+			rankRecord.current_rank_amount = 300;
+			await rankRecord.save();
 			// send notification to user
 			const userNotification = await UserNotification.create({
 				user_id: user._id,
@@ -1943,11 +1998,44 @@ cron.schedule('0 * * * *', async () => {
 			user.processing_for = 'glorious';
 			user.rank_claimed = false;
 			await user.save();
+
+			// update rank record
+			rankRecord.current_rank = 'glorious';
+			rankRecord.current_rank_amount = 500;
+			await rankRecord.save();
 			// send notification to user
 			const userNotification = await UserNotification.create({
 				user_id: user._id,
 				subject: 'Rank Promotion',
 				description: `Congratulations! You have been promoted to Glorious Rank.
+				Please claim your rank bonus.
+				`,
+				url: '/rank-claim',
+			});
+			console.log(userNotification);
+			global.io.emit('user-notification', userNotification);
+		} else if (
+			user.rank === 'glorious' &&
+			gloriousUsers.length >= 5 &&
+			total_members >= 300
+		) {
+			user.rank_is_processing = true;
+			user.processing_for = 'marvelous';
+			user.rank_claimed = false;
+			user.is_salary = true;
+			await user.save();
+
+			// update rank record
+			rankRecord.current_rank = 'marvelous';
+			rankRecord.current_rank_amount = 500;
+			rankRecord.current_salary = 200;
+			rankRecord.salary_start_date = Date.now();
+			await rankRecord.save();
+			// send notification to user
+			const userNotification = await UserNotification.create({
+				user_id: user._id,
+				subject: 'Rank Promotion',
+				description: `Congratulations! You have been promoted to Marvelous Rank.
 				Please claim your rank bonus.
 				`,
 				url: '/rank-claim',
@@ -1986,18 +2074,18 @@ exports.claimRankBonus = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('User not found', 404));
 	}
 
-	let numAmount = 0;
-	if (user.processing_for === 'premier') {
-		numAmount = 50;
-	} else if (user.processing_for === 'elite') {
-		numAmount = 100;
-	} else if (user.processing_for === 'majestic') {
-		numAmount = 200;
-	} else if (user.processing_for === 'royal') {
-		numAmount = 300;
-	} else if (user.processing_for === 'glorious') {
-		numAmount = 500;
+	// find rank record
+	let rankRecord = await RankRecord.findOne({ user_id: user._id });
+	if (!rankRecord) {
+		// create rank record
+		rankRecord = await RankRecord.create({
+			user_id: user._id,
+			customer_id: user.customer_id,
+			username: user.username,
+		});
 	}
+
+	const numAmount = Number(rankRecord.current_rank_amount);
 
 	// check if user rank_is_processing: true
 	if (user.rank_is_processing === false) {
@@ -2016,19 +2104,23 @@ exports.claimRankBonus = catchAsyncErrors(async (req, res, next) => {
 		'cashIn',
 		numAmount,
 		'bonus',
-		`Rank Bonus from Glomax rank of ${user.processing_for}`
+		`Rank Bonus from Glomax rank of ${rankRecord.current_rank}`
 	);
 	user.b_balance += numAmount;
 	user.rank_claimed = true;
 	user.rank_is_processing = false;
-	user.rank = user.processing_for;
-	user.processing_for = null;
-	user.rank_details = {
-		rank: user.processing_for,
-		achieved_date: Date.now(),
-		amount: numAmount,
-	};
+	user.rank = rankRecord.current_rank;
 	await user.save();
+
+	// update rank record
+	rankRecord.rank_history.push({
+		rank: rankRecord.current_rank,
+		updated_at: Date.now(),
+		amount: numAmount,
+	});
+	rankRecord.ranks.push(rankRecord.current_rank);
+	rankRecord.total_rank_bonus += numAmount;
+	await rankRecord.save();
 
 	// find company
 	const company = await Company.findOne();
@@ -2110,5 +2202,202 @@ exports.changeBlockStatus = catchAsyncErrors(async (req, res, next) => {
 	res.status(200).json({
 		success: true,
 		message: 'User block status updated successfully',
+	});
+});
+
+// update rank records
+exports.updateRankRecords = catchAsyncErrors(async (req, res, next) => {
+	// find user rank is premier || elite || majestic || royal || glorious || marvelous
+	const users = await User.find({
+		$or: [
+			{ rank: 'premier' },
+			{ rank: 'elite' },
+			{ rank: 'majestic' },
+			{ rank: 'royal' },
+			{ rank: 'glorious' },
+			{ rank: 'marvelous' },
+		],
+	});
+
+	console.log(users.length);
+
+	for (let i = 0; i < users.length; i++) {
+		const user = users[i];
+		// console.log(user);
+
+		// create rank record if not exist
+		let rankRecord = await RankRecord.findOne({ user_id: user._id });
+		if (!rankRecord) {
+			rankRecord = await RankRecord.create({
+				user_id: user._id,
+				customer_id: user.customer_id,
+				username: user.username,
+			});
+		}
+
+		if (user.rank === 'premier') {
+			rankRecord.current_rank = 'premier';
+			rankRecord.current_rank_amount = 50;
+			rankRecord.rank_updated_at = user.rank_details.achieved_date;
+			rankRecord.rank_history.push({
+				rank: user.rank,
+				updated_at: user.rank_details.achieved_date,
+				amount: 50,
+			});
+			rankRecord.ranks.push('premier');
+			rankRecord.total_rank_bonus = 50;
+			await rankRecord.save();
+		} else if (user.rank === 'elite') {
+			rankRecord.current_rank = 'elite';
+			rankRecord.current_rank_amount = 100;
+			rankRecord.rank_updated_at = user.rank_details.achieved_date;
+			rankRecord.rank_history.push({
+				rank: user.rank,
+				updated_at: user.rank_details.achieved_date,
+				amount: 100,
+			});
+			rankRecord.ranks.push('premier ', 'elite');
+			rankRecord.total_rank_bonus = 150;
+			await rankRecord.save();
+		} else if (user.rank === 'majestic') {
+			rankRecord.current_rank = 'majestic';
+			rankRecord.current_rank_amount = 200;
+			rankRecord.rank_updated_at = user.rank_details.achieved_date;
+			rankRecord.rank_history.push({
+				rank: user.rank,
+				updated_at: user.rank_details.achieved_date,
+				amount: 200,
+			});
+			rankRecord.ranks.push('premier ', 'elite', 'majestic');
+			rankRecord.total_rank_bonus = 350;
+			await rankRecord.save();
+		} else if (user.rank === 'royal') {
+			rankRecord.current_rank = 'royal';
+			rankRecord.current_rank_amount = 300;
+			rankRecord.rank_updated_at = user.rank_details.achieved_date;
+			rankRecord.rank_history.push({
+				rank: user.rank,
+				updated_at: user.rank_details.achieved_date,
+				amount: 300,
+			});
+			rankRecord.ranks.push('premier ', 'elite', 'majestic', 'royal');
+			rankRecord.total_rank_bonus = 650;
+			await rankRecord.save();
+		} else if (user.rank === 'glorious') {
+			rankRecord.current_rank = 'glorious';
+			rankRecord.current_rank_amount = 500;
+			rankRecord.rank_updated_at = user.rank_details.achieved_date;
+			rankRecord.rank_history.push({
+				rank: user.rank,
+				updated_at: user.rank_details.achieved_date,
+				amount: 500,
+			});
+			rankRecord.ranks.push(
+				'premier ',
+				'elite',
+				'majestic',
+				'royal',
+				'glorious'
+			);
+			rankRecord.total_rank_bonus = 1150;
+			await rankRecord.save();
+		}
+	}
+
+	res.status(200).json({
+		success: true,
+		message: 'Rank records updated successfully',
+	});
+});
+
+// get logged in user rank record
+exports.getRankRecord = catchAsyncErrors(async (req, res, next) => {
+	const user = await User.findById(req.user._id);
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
+
+	// find rank records
+	const rankRecord = await RankRecord.findOne({ user_id: user._id });
+
+	res.status(200).json({
+		success: true,
+		rankRecord,
+	});
+});
+
+// get logged in user rank members
+exports.getRankMembers = catchAsyncErrors(async (req, res, next) => {
+	const user = await User.findById(req.user._id);
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
+
+	// get team
+	const team = await Team.findOne({ user_id: user._id });
+	if (!team) {
+		return next(new ErrorHandler('Team not found', 404));
+	}
+
+	// get all level 1 active members
+	const level_1_count = await User.countDocuments({
+		'parent_1.customer_id': user.customer_id,
+		is_active: true,
+	});
+
+	// find level 1 members
+	const level_1_members = await User.find({
+		'parent_1.customer_id': user.customer_id,
+		is_active: true,
+	});
+
+	// get all level 2 active members
+	const level_2_count = await User.countDocuments({
+		'parent_2.customer_id': user.customer_id,
+		is_active: true,
+	});
+
+	// get all level 3 active members
+	const level_3_count = await User.countDocuments({
+		'parent_3.customer_id': user.customer_id,
+		is_active: true,
+	});
+
+	// get all level 4 active members
+	const level_4_count = await User.countDocuments({
+		'parent_4.customer_id': user.customer_id,
+		is_active: true,
+	});
+
+	// get all level 5 active members
+	const level_5_count = await User.countDocuments({
+		'parent_5.customer_id': user.customer_id,
+		is_active: true,
+	});
+
+	const total_members =
+		level_1_count +
+		level_2_count +
+		level_3_count +
+		level_4_count +
+		level_5_count;
+
+	// console.log(
+	// 	'Name',
+	// 	user.name,
+	// 	'Total Members',
+	// 	total_members,
+	// 	'Level 1',
+	// 	level_1_count
+	// );
+
+	// for rank marvelous
+	const gloriousUsers = level_1_members.filter(
+		(member) => member.rank === 'glorious'
+	);
+
+	res.status(200).json({
+		success: true,
+		rankMembers,
 	});
 });

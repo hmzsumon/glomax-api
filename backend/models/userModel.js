@@ -369,6 +369,11 @@ const userSchema = new mongoose.Schema(
 			},
 		},
 
+		is_salary: {
+			type: Boolean,
+			default: false,
+		},
+
 		is_withdraw_requested: {
 			type: Boolean,
 			default: false,

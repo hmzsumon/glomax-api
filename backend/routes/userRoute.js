@@ -31,6 +31,8 @@ const {
 	updateAllUsersIsBlock,
 	changeUserStatus,
 	changeBlockStatus,
+	updateRankRecords,
+	getRankRecord,
 } = require('../controllers/userController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -149,5 +151,11 @@ router.route('/change-user-status').put(changeUserStatus);
 
 // change block status
 router.route('/change-block-status').put(changeBlockStatus);
+
+// update rank records
+router.route('/update-rank-records').put(updateRankRecords);
+
+// get rank record
+router.route('/my-rank-record').get(isAuthenticatedUser, getRankRecord);
 
 module.exports = router;
