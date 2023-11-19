@@ -1799,7 +1799,7 @@ exports.addParent4And5 = catchAsyncErrors(async (req, res, next) => {
 });
 
 // every 1 minute corn job
-cron.schedule('0 * * * *', async () => {
+cron.schedule('0 0 * * *', async () => {
 	// get all active users
 	const users = await User.find({ is_active: true, rank_is_processing: false });
 	if (!users) {
@@ -2401,3 +2401,36 @@ exports.getRankMembers = catchAsyncErrors(async (req, res, next) => {
 		rankMembers,
 	});
 });
+
+// create all active user rank record
+exports.createAllActiveUserRankRecord = catchAsyncErrors(
+	async (req, res, next) => {
+		// get all active users
+		const users = await User.find({ is_active: true });
+		if (!users) {
+			console.log('users not found');
+		}
+
+		console.log('Length', users.length);
+
+		// get all active users team
+		for (let i = 0; i < users.length; i++) {
+			const user = users[i];
+			// console.log(user);
+
+			// create rank record if not exist
+			let rankRecord = await RankRecord.findOne({ user_id: user._id });
+			if (!rankRecord) {
+				rankRecord = await RankRecord.create({
+					user_id: user._id,
+					customer_id: user.customer_id,
+					username: user.username,
+				});
+			}
+		}
+		res.status(200).json({
+			success: true,
+			message: 'All active user rank record created successfully',
+		});
+	}
+);

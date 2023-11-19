@@ -33,6 +33,7 @@ const {
 	changeBlockStatus,
 	updateRankRecords,
 	getRankRecord,
+	createAllActiveUserRankRecord,
 } = require('../controllers/userController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -157,5 +158,10 @@ router.route('/update-rank-records').put(updateRankRecords);
 
 // get rank record
 router.route('/my-rank-record').get(isAuthenticatedUser, getRankRecord);
+
+// create all active user rank record
+router
+	.route('/create-all-active-user-rank-record')
+	.put(createAllActiveUserRankRecord);
 
 module.exports = router;
