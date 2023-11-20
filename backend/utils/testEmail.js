@@ -1,7 +1,6 @@
 const nodemailer = require('nodemailer');
 
-// send email
-const sendEmail = async (option) => {
+const testEmail = async (email) => {
 	try {
 		const transporter = nodemailer.createTransport({
 			host: 'mail.privateemail.com',
@@ -14,11 +13,12 @@ const sendEmail = async (option) => {
 		});
 
 		const info = await transporter.sendMail({
-			from: 'Glomax" <support@glomax.org>',
-			to: option.email,
-			subject: option.subject,
-			html: option.html,
+			from: '"Glomax" <support@glomax.org>',
+			to: email,
+			subject: 'Test email',
+			html: '<b>This is a test email</b>',
 		});
+
 		console.log('Message sent: %s', info.messageId);
 		console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
 	} catch (err) {
@@ -26,4 +26,4 @@ const sendEmail = async (option) => {
 	}
 };
 
-module.exports = { sendEmail };
+module.exports = { testEmail };
