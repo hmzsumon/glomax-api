@@ -37,11 +37,6 @@ exports.newWithdrawRequest = catchAsyncErrors(async (req, res, next) => {
 		);
 	}
 
-	// check if user has enough balance
-	if (user.m_balance < numAmount) {
-		return next(new ErrorHandler('Insufficient balance', 400));
-	}
-
 	// check user has any ai robot status is completed
 	const aiRobot = await AiRobot.findOne({
 		user_id: user._id,
@@ -96,8 +91,20 @@ exports.newWithdrawRequest = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('Company not found', 404));
 	}
 
-	// user balance
-	user.m_balance -= numAmount;
+	const total_balance = user.m_balance + user.ai_balance - user.trading_volume;
+
+	// check if user has enough balance
+	if (total_balance < numAmount) {
+		return next(new ErrorHandler('Insufficient balance', 400));
+	}
+
+	if (numAmount > user.m_balance) {
+		const diff = numAmount - user.m_balance;
+		user.ai_balance -= diff;
+		user.m_balance = 0;
+	} else {
+		user.m_balance -= numAmount;
+	}
 	createTransaction(
 		user._id,
 		'cashOut',
