@@ -2017,7 +2017,7 @@ cron.schedule('0 0 * * *', async () => {
 		} else if (
 			user.rank === 'glorious' &&
 			gloriousUsers.length >= 5 &&
-			total_members >= 300
+			total_members >= 600
 		) {
 			user.rank_is_processing = true;
 			user.processing_for = 'marvelous';
@@ -2391,6 +2391,26 @@ exports.getRankMembers = catchAsyncErrors(async (req, res, next) => {
 	// 	level_1_count
 	// );
 
+	// filter premier members
+	const premierUsers = level_1_members.filter(
+		(member) => member.rank === 'premier'
+	);
+
+	// filter elite members
+	const eliteUsers = level_1_members.filter(
+		(member) => member.rank === 'elite'
+	);
+
+	// filter majestic members
+	const majesticUsers = level_1_members.filter(
+		(member) => member.rank === 'majestic'
+	);
+
+	// filter royal members
+	const royalUsers = level_1_members.filter(
+		(member) => member.rank === 'royal'
+	);
+
 	// for rank marvelous
 	const gloriousUsers = level_1_members.filter(
 		(member) => member.rank === 'glorious'
@@ -2398,7 +2418,43 @@ exports.getRankMembers = catchAsyncErrors(async (req, res, next) => {
 
 	res.status(200).json({
 		success: true,
-		rankMembers,
+		premierUsers,
+		eliteUsers,
+		majesticUsers,
+		royalUsers,
+		gloriousUsers,
+	});
+});
+
+// get logged in user rank members
+exports.getRankMembersByRank = catchAsyncErrors(async (req, res, next) => {
+	const user = await User.findById(req.user._id);
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
+
+	const { rank } = req.params;
+
+	// get team
+	const team = await Team.findOne({ user_id: user._id });
+	if (!team) {
+		return next(new ErrorHandler('Team not found', 404));
+	}
+
+	// find level 1 members
+	const level_1_members = await User.find({
+		'parent_1.customer_id': user.customer_id,
+		is_active: true,
+	});
+
+	// filter premier members
+	const users = level_1_members.filter(
+		(member) => member.rank === rank.toLowerCase()
+	);
+
+	res.status(200).json({
+		success: true,
+		users,
 	});
 });
 

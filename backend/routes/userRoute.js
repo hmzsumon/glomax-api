@@ -34,6 +34,8 @@ const {
 	updateRankRecords,
 	getRankRecord,
 	createAllActiveUserRankRecord,
+	getRankMembers,
+	getRankMembersByRank,
 } = require('../controllers/userController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -163,5 +165,13 @@ router.route('/my-rank-record').get(isAuthenticatedUser, getRankRecord);
 router
 	.route('/create-all-active-user-rank-record')
 	.put(createAllActiveUserRankRecord);
+
+// get rank members
+router.route('/get-rank-members').get(isAuthenticatedUser, getRankMembers);
+
+// get rank members by rank
+router
+	.route('/get-rank-members-by-rank/:rank')
+	.get(isAuthenticatedUser, getRankMembersByRank);
 
 module.exports = router;
