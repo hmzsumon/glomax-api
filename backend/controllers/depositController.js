@@ -331,6 +331,11 @@ exports.createDeposit = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('User not found', 404));
 	}
 
+	// check user is_blocked
+	if (user.is_block) {
+		return next(new ErrorHandler('You are blocked', 403));
+	}
+
 	// check if user is is_deposit_requested
 	if (user.is_deposit_requested) {
 		return next(new ErrorHandler('Deposit already requested', 400));
