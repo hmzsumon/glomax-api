@@ -538,3 +538,24 @@ exports.rejectWithdraw = catchAsyncErrors(async (req, res, next) => {
 		message: 'Withdraw request rejected successfully',
 	});
 });
+
+//// find withdraw by sl_no 100 to 200
+exports.findWithdrawsBySlNo = catchAsyncErrors(async (req, res, next) => {
+	const { start, end } = req.body;
+	const withdraws = await Withdraw.find({
+		sl_no: { $gte: start, $lte: end },
+		is_approved: true,
+	});
+	if (!withdraws) {
+		return next(new ErrorHandler('Withdraw requests not found', 404));
+	}
+
+	const totalAmount = withdraws.reduce((acc, item) => acc + item.net_amount, 0);
+
+	res.status(200).json({
+		success: true,
+		count: withdraws.length,
+		withdraws,
+		totalAmount,
+	});
+});

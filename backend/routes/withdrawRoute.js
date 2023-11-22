@@ -10,6 +10,7 @@ const {
 	cancelWithdraw,
 	addSlNo,
 	rejectWithdraw,
+	findWithdrawsBySlNo,
 } = require('../controllers/withdrawController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 
@@ -62,5 +63,8 @@ router.route('/withdraw/add-sl-no').put(addSlNo);
 router
 	.route('/withdraw/reject')
 	.put(isAuthenticatedUser, authorizeRoles('admin', 'manager'), rejectWithdraw);
+
+// Find withdraws by sl no => /api/v1/admin/withdraws/sl-no/:slNo
+router.route('/withdraws/sl-no').put(findWithdrawsBySlNo);
 
 module.exports = router;

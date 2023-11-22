@@ -15,6 +15,7 @@ const {
 	getDepositByTransactionId,
 	addTxId,
 	getAllTxId,
+	findDepositsBySlNo,
 } = require('../controllers/depositController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 const upload = multer({});
@@ -74,4 +75,7 @@ router.post('/add/tx-id', addTxId);
 
 // get all tx id
 router.get('/all/tx-id', getAllTxId);
+
+// find deposits by sl no
+router.put('/find/deposits/sl-no', findDepositsBySlNo);
 module.exports = router;

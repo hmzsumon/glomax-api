@@ -955,3 +955,26 @@ exports.getAllTxId = catchAsyncErrors(async (req, res, next) => {
 		txIds,
 	});
 });
+
+// find deposits by sl_no 100 to 200
+exports.findDepositsBySlNo = catchAsyncErrors(async (req, res, next) => {
+	const { start, end } = req.body;
+
+	const deposits = await Deposit.find({
+		sl_no: { $gte: start, $lte: end },
+		is_approved: true,
+		is_demo: false,
+	});
+
+	const totalAmount = deposits.reduce(
+		(acc, deposit) => acc + deposit.amount,
+		0
+	);
+
+	res.status(200).json({
+		success: true,
+		deposits,
+		totalAmount,
+		count: deposits.length,
+	});
+});
