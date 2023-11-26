@@ -70,6 +70,17 @@ const depositSchema = new mongoose.Schema(
 		sl_no: {
 			type: Number,
 		},
+		parents: [
+			{
+				user_id: {
+					type: mongoose.Schema.Types.ObjectId,
+					ref: 'User',
+				},
+				bonus: {
+					type: Number,
+				},
+			},
+		],
 	},
 	{
 		timestamps: true,

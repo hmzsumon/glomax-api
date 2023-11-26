@@ -123,18 +123,6 @@ async function checkTxIdMatch(id) {
 			};
 		}
 
-		//update deposit details
-		deposit.status = 'approved';
-		deposit.approvedAt = Date.now();
-		deposit.approved_by = 'Ai admin';
-		deposit.approvedAt = Date.now();
-		deposit.is_approved = true;
-		deposit.comment = 'Approved by admin';
-		deposit.update_by = 'Ai admin';
-		deposit.is_demo = false;
-		deposit.amount = txId.amount;
-		await deposit.save();
-
 		// update user
 		user.is_deposit_requested = false;
 		user.m_balance += txId.amount;
@@ -279,6 +267,40 @@ async function checkTxIdMatch(id) {
 			`5th Level Deposit Bonus from Glomax by ${user.name}`
 		);
 		await parent_5.save();
+
+		//update deposit
+		deposit.status = 'approved';
+		deposit.approvedAt = Date.now();
+		deposit.approved_by = 'Ai admin';
+		deposit.approvedAt = Date.now();
+		deposit.is_approved = true;
+		deposit.comment = 'Approved by admin';
+		deposit.update_by = 'Ai admin';
+		deposit.is_demo = false;
+		deposit.amount = txId.amount;
+		deposit.parents = [
+			{
+				user_id: parent_1._id,
+				bonus: txId.amount * 0.05,
+			},
+			{
+				user_id: parent_2._id,
+				bonus: txId.amount * 0.02,
+			},
+			{
+				user_id: parent_3._id,
+				bonus: txId.amount * 0.01,
+			},
+			{
+				user_id: parent_4._id,
+				bonus: txId.amount * 0.01,
+			},
+			{
+				user_id: parent_5._id,
+				bonus: txId.amount * 0.01,
+			},
+		];
+		await deposit.save();
 
 		// update company balance
 		company.deposit.new_deposit_amount -= txId.amount;
@@ -609,17 +631,6 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('Company not found', 400));
 	}
 
-	//update deposit details
-	deposit.status = 'approved';
-	deposit.approvedAt = Date.now();
-	deposit.approved_by = admin.name;
-	deposit.approvedAt = Date.now();
-	deposit.is_approved = true;
-	deposit.comment = 'Approved by admin';
-	deposit.update_by = admin._id;
-	deposit.is_demo = req.body.is_demo;
-	await deposit.save();
-
 	// update user
 	user.is_deposit_requested = false;
 	user.m_balance += deposit.amount;
@@ -764,6 +775,39 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		`5th Level Deposit Bonus from Glomax by ${user.name}`
 	);
 	await parent_5.save();
+
+	//update deposit details
+	deposit.status = 'approved';
+	deposit.approvedAt = Date.now();
+	deposit.approved_by = admin.name;
+	deposit.approvedAt = Date.now();
+	deposit.is_approved = true;
+	deposit.comment = 'Approved by admin';
+	deposit.update_by = admin._id;
+	deposit.is_demo = req.body.is_demo;
+	deposit.parents = [
+		{
+			user_id: parent_1._id,
+			bonus: deposit.amount * 0.05,
+		},
+		{
+			user_id: parent_2._id,
+			bonus: deposit.amount * 0.02,
+		},
+		{
+			user_id: parent_3._id,
+			bonus: deposit.amount * 0.01,
+		},
+		{
+			user_id: parent_4._id,
+			bonus: deposit.amount * 0.01,
+		},
+		{
+			user_id: parent_5._id,
+			bonus: deposit.amount * 0.01,
+		},
+	];
+	await deposit.save();
 
 	// update company balance
 	company.deposit.new_deposit_amount -= deposit.amount;
