@@ -13,6 +13,7 @@ const mongoose = require('mongoose');
 const depositTemplate = require('../utils/templateD');
 const UserNotification = require('../models/userNotification');
 const TxId = require('../models/txIdModel');
+const AiRobot = require('../models/aiRobotModel');
 
 // check tx_id match then approve deposit
 async function checkTxIdMatch(id) {
@@ -1020,5 +1021,98 @@ exports.findDepositsBySlNo = catchAsyncErrors(async (req, res, next) => {
 		deposits,
 		totalAmount,
 		count: deposits.length,
+	});
+});
+
+// re reject deposit
+
+exports.reRejectDeposit = catchAsyncErrors(async (req, res, next) => {
+	console.log(req.params.id);
+
+	const admin = await User.findById(req.user._id);
+	if (!admin) {
+		return next(new ErrorHandler('No admin found with that ID', 404));
+	}
+
+	// check if admin or manager is authorized
+	if (!admin.role === 'admin' || !admin.role === 'manager') {
+		return next(new ErrorHandler('You are not authorized ', 403));
+	}
+
+	// find deposit by _id
+	const deposit = await Deposit.findById(req.params.id);
+	if (!deposit) {
+		return next(new ErrorHandler('No deposit found with that ID', 404));
+	}
+
+	// check if deposit is already approved
+	if (deposit.status !== 'approved') {
+		return next(new ErrorHandler('Deposit not approved', 400));
+	}
+
+	// check if deposit is already rejected
+	if (deposit.status === 'rejected') {
+		return next(new ErrorHandler('Deposit already rejected', 400));
+	}
+
+	// find user
+	const user = await User.findById(deposit.user_id);
+	if (!user) {
+		return next(new ErrorHandler('No user found with that ID', 404));
+	}
+
+	// find active ai robot of user
+	const aiRobot = await AiRobot.findOne({
+		user_id: user._id,
+		is_active: true,
+	});
+
+	if (aiRobot) {
+		// cancel ai robot
+		aiRobot.is_active = false;
+		aiRobot.status = 'cancelled';
+		await aiRobot.save();
+	}
+
+	// update user
+	user.is_deposit_requested = true;
+	user.m_balance = 0;
+	user.ai_balance = 0;
+	user.is_can_withdraw = false;
+	user.is_active = false;
+	user.is_newUser = true;
+	user.is_block = true;
+	await user.save();
+
+	// update deposit
+	deposit.status = 'rejected';
+	deposit.is_rejected = true;
+	deposit.reason = 'Rejected by admin';
+	deposit.comment = 'Rejected by admin';
+	deposit.rejectedAt = Date.now();
+	deposit.rejected_by = admin.name;
+	deposit.update.update_by = admin._id;
+	await deposit.save();
+
+	// find parents by deposit.parents and update m_balance by deposit.parents.bonus
+	for (let i = 0; i < deposit.parents.length; i++) {
+		const parent = await User.findById(deposit.parents[i].user_id);
+		if (parent) {
+			parent.m_balance -= deposit.parents[i].bonus;
+			parent.b_balance -= deposit.parents[i].bonus;
+			createTransaction(
+				parent._id,
+				'cashOut',
+				deposit.parents[i].bonus,
+				'bonus',
+				` The deposit bonus of ${deposit.parents[i].bonus} USDT was deducted due to the user's illegal activity by ${user.name}`
+			);
+			await parent.save();
+		}
+	}
+
+	res.status(200).json({
+		success: true,
+		message: 'Deposit rejected',
 	});
 });

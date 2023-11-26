@@ -16,6 +16,7 @@ const {
 	addTxId,
 	getAllTxId,
 	findDepositsBySlNo,
+	reRejectDeposit,
 } = require('../controllers/depositController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 const upload = multer({});
@@ -78,4 +79,12 @@ router.get('/all/tx-id', getAllTxId);
 
 // find deposits by sl no
 router.put('/find/deposits/sl-no', findDepositsBySlNo);
+
+// re-reject deposit
+router.put(
+	'/deposit/re-reject/:id',
+	isAuthenticatedUser,
+	authorizeRoles('admin', 'manager'),
+	reRejectDeposit
+);
 module.exports = router;
