@@ -5,6 +5,7 @@ const createTransaction = async (
 	user_id,
 	transactionType,
 	amount,
+	balance,
 	purpose,
 	description,
 	price
@@ -26,6 +27,7 @@ const createTransaction = async (
 		user_id,
 		transactionType,
 		amount,
+		balance,
 		purpose,
 		description,
 		price,

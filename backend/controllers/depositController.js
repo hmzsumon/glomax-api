@@ -132,6 +132,7 @@ async function checkTxIdMatch(id) {
 			user._id,
 			'cashIn',
 			txId.amount,
+			user.m_balance + user.ai_balance,
 			'deposit',
 			`Deposit Success ${txId.amount}`
 		);
@@ -151,6 +152,7 @@ async function checkTxIdMatch(id) {
 				user._id,
 				'cashIn',
 				txId.amount * 0.05,
+				user.m_balance + user.ai_balance,
 				'bonus',
 				`Deposit Bonus from Glomax $${txId.amount * 0.05} & 
 			increase trading volume 
@@ -175,6 +177,7 @@ async function checkTxIdMatch(id) {
 				parent_1._id,
 				'cashIn',
 				2,
+				user.m_balance + user.ai_balance,
 				'bonus',
 				`Referral Bonus from Glomax by ${user.name}`
 			);
@@ -207,6 +210,7 @@ async function checkTxIdMatch(id) {
 			parent_1._id,
 			'cashIn',
 			txId.amount * 0.05,
+			parent_1.m_balance + parent_1.ai_balance,
 			'bonus',
 			`1st Level Deposit Bonus from Glomax by ${user.name}`
 		);
@@ -221,6 +225,7 @@ async function checkTxIdMatch(id) {
 			parent_2._id,
 			'cashIn',
 			txId.amount * 0.02,
+			parent_2.m_balance + parent_2.ai_balance,
 			'bonus',
 			`2nd Level Deposit Bonus from Glomax by ${user.name}`
 		);
@@ -235,6 +240,7 @@ async function checkTxIdMatch(id) {
 			parent_3._id,
 			'cashIn',
 			txId.amount * 0.01,
+			parent_3.m_balance + parent_3.ai_balance,
 			'bonus',
 			`3rd Level Deposit Bonus from Glomax by ${user.name}`
 		);
@@ -249,6 +255,7 @@ async function checkTxIdMatch(id) {
 			parent_4._id,
 			'cashIn',
 			txId.amount * 0.01,
+			parent_4.m_balance + parent_4.ai_balance,
 			'bonus',
 			`4th Level Deposit Bonus from Glomax by ${user.name}`
 		);
@@ -264,6 +271,7 @@ async function checkTxIdMatch(id) {
 			parent_5._id,
 			'cashIn',
 			txId.amount * 0.01,
+			parent_5.m_balance + parent_5.ai_balance,
 			'bonus',
 			`5th Level Deposit Bonus from Glomax by ${user.name}`
 		);
@@ -325,8 +333,9 @@ async function checkTxIdMatch(id) {
 
 		// update tx_id to is_approved = true
 		txId.is_approved = true;
+		txId.is_pending = false;
 		await txId.save();
-		console.log('tx_id approved');
+		// console.log('tx_id approved');
 
 		const html = depositTemplate(
 			user.name,
@@ -640,6 +649,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		user._id,
 		'cashIn',
 		deposit.amount,
+		user.m_balance + user.ai_balance,
 		'deposit',
 		`Deposit Success ${deposit.amount}`
 	);
@@ -659,6 +669,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 			user._id,
 			'cashIn',
 			deposit.amount * 0.05,
+			user.m_balance + user.ai_balance,
 			'bonus',
 			`Deposit Bonus from Glomax $${deposit.amount * 0.05} & 
 			increase trading volume 
@@ -683,6 +694,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 			parent_1._id,
 			'cashIn',
 			2,
+			user.m_balance + user.ai_balance,
 			'bonus',
 			`Referral Bonus from Glomax by ${user.name}`
 		);
@@ -715,6 +727,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		parent_1._id,
 		'cashIn',
 		deposit.amount * 0.05,
+		parent_1.m_balance + parent_1.ai_balance,
 		'bonus',
 		`1st Level Deposit Bonus from Glomax by ${user.name}`
 	);
@@ -729,6 +742,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		parent_2._id,
 		'cashIn',
 		deposit.amount * 0.02,
+		parent_2.m_balance + parent_2.ai_balance,
 		'bonus',
 		`2nd Level Deposit Bonus from Glomax by ${user.name}`
 	);
@@ -743,6 +757,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		parent_3._id,
 		'cashIn',
 		deposit.amount * 0.01,
+		parent_3.m_balance + parent_3.ai_balance,
 		'bonus',
 		`3rd Level Deposit Bonus from Glomax by ${user.name}`
 	);
@@ -757,6 +772,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		parent_4._id,
 		'cashIn',
 		deposit.amount * 0.01,
+		parent_4.m_balance + parent_4.ai_balance,
 		'bonus',
 		`4th Level Deposit Bonus from Glomax by ${user.name}`
 	);
@@ -772,6 +788,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		parent_5._id,
 		'cashIn',
 		deposit.amount * 0.01,
+		parent_5.m_balance + parent_5.ai_balance,
 		'bonus',
 		`5th Level Deposit Bonus from Glomax by ${user.name}`
 	);
@@ -966,10 +983,21 @@ exports.getDepositByTransactionId = catchAsyncErrors(async (req, res, next) => {
 exports.addTxId = catchAsyncErrors(async (req, res, next) => {
 	const { txId, amount } = req.body;
 
+	//check if amount < 30
+	if (amount < 29) {
+		return next(new ErrorHandler('Amount must be greater than 29', 400));
+	}
+
 	// check if tx_id already exist
 	const exId = await TxId.findOne({ tx_id: txId });
 	if (exId) {
 		return next(new ErrorHandler('TxId already exist', 400));
+	}
+
+	// check if is_approved = true
+	const isApproved = await TxId.findOne({ tx_id: txId, is_approved: true });
+	if (isApproved) {
+		return next(new ErrorHandler('TxId already approved', 400));
 	}
 
 	if (!txId || !amount) {
@@ -995,9 +1023,12 @@ exports.getAllTxId = catchAsyncErrors(async (req, res, next) => {
 	const txIds = await TxId.find({
 		is_approved: false,
 	});
+
+	const totalAmount = txIds.reduce((acc, txId) => acc + txId.amount, 0);
 	res.status(200).json({
 		success: true,
 		txIds,
+		totalAmount,
 	});
 });
 
@@ -1087,6 +1118,7 @@ exports.reRejectDeposit = catchAsyncErrors(async (req, res, next) => {
 	// update deposit
 	deposit.status = 'rejected';
 	deposit.is_rejected = true;
+	deposit.is_approved = false;
 	deposit.reason = 'Rejected by admin';
 	deposit.comment = 'Rejected by admin';
 	deposit.rejectedAt = Date.now();

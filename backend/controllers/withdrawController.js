@@ -109,6 +109,7 @@ exports.newWithdrawRequest = catchAsyncErrors(async (req, res, next) => {
 		user._id,
 		'cashOut',
 		numAmount,
+		user.m_balance + user.ai_balance,
 		'withdraw',
 		`Withdraw request for ${numAmount} was created`
 	);
@@ -422,6 +423,7 @@ exports.cancelWithdraw = catchAsyncErrors(async (req, res, next) => {
 		user._id,
 		'cashIn',
 		withdraw.amount,
+		user.m_balance + user.ai_balance,
 		'withdraw',
 		`Withdraw request of ${numAmount} was cancelled`
 	);
@@ -517,6 +519,7 @@ exports.rejectWithdraw = catchAsyncErrors(async (req, res, next) => {
 		user._id,
 		'cashIn',
 		withdraw.amount,
+		user.m_balance + user.ai_balance,
 		'withdraw',
 		`Withdraw request of ${withdraw.amount} was rejected`
 	);

@@ -27,6 +27,10 @@ const transactionSchema = new Schema(
 			type: Boolean,
 			default: false,
 		},
+		balance: {
+			type: Number,
+			default: 0,
+		},
 		currency: { type: String, default: 'USDT' },
 		description: { type: String, default: 'Transaction' },
 	},

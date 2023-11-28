@@ -434,6 +434,7 @@ exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
 		user._id,
 		'cashIn',
 		2,
+		user.m_balance + user.ai_balance,
 		'bonus',
 		`Signup bonus $2.00 from Glomax`
 	);
@@ -755,6 +756,7 @@ exports.registerDone = catchAsyncErrors(async (req, res, next) => {
 		parent_1._id,
 		'cashIn',
 		10,
+		parent_1.m_balance + parent_1.ai_balance,
 		'bonus',
 		`Referral Bonus from ${user.name}`
 	);
@@ -794,7 +796,14 @@ exports.registerDone = catchAsyncErrors(async (req, res, next) => {
 	user.signup_bonus = 100;
 	user.mining_balance = 100;
 	user.is_mining = true;
-	createTransaction(user._id, 'cashIn', 100, 'bonus', `Signup Bonus from`);
+	createTransaction(
+		user._id,
+		'cashIn',
+		100,
+		user.m_balance + user.ai_balance,
+		'bonus',
+		`Signup Bonus from Glomax`
+	);
 	await user.save();
 
 	// update parent_mining_1
@@ -2103,6 +2112,7 @@ exports.claimRankBonus = catchAsyncErrors(async (req, res, next) => {
 		user._id,
 		'cashIn',
 		numAmount,
+		user.m_balance + user.a_balance,
 		'bonus',
 		`Rank Bonus from Glomax rank of ${rankRecord.current_rank}`
 	);

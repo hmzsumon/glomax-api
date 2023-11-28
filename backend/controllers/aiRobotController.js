@@ -63,15 +63,18 @@ exports.newAiRobot = catchAsyncErrors(async (req, res, next) => {
 
 	// update user balance
 	user.ai_balance -= mumInvestment;
+	user.ai_robot = true;
+	await user.save();
+
+	const totalBalance = user.ai_balance + user.m_balance;
 	createTransaction(
 		user._id,
 		'cashOut',
 		mumInvestment,
+		totalBalance,
 		'aiRobot',
 		`Investment in Ai Robot`
 	);
-	user.ai_robot = true;
-	await user.save();
 
 	// update aiRobotRecord
 	aiRobotRecord.active_robot_id = newAiRobot._id;
@@ -138,15 +141,17 @@ exports.cancelAiRobot = catchAsyncErrors(async (req, res, next) => {
 	// update user balance
 	user.ai_balance = user.ai_balance + refund_amount;
 	company.total_active_ai_balance -= aiRobot.current_investment;
+	user.ai_robot = false;
+	await user.save();
+	const totalBalance = user.ai_balance + user.m_balance;
 	createTransaction(
 		user._id,
 		'cashIn',
 		refund_amount,
+		totalBalance,
 		'aiRobot',
 		`Ai Robot Cancelled`
 	);
-	user.ai_robot = false;
-	await user.save();
 
 	// update company balance
 	company.total_ai_balance += refund_amount;
@@ -280,9 +285,9 @@ exports.editAiRobot = catchAsyncErrors(async (req, res, next) => {
 });
 
 async function updateInactiveAiRobots() {
-	const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+	// const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-	// const twentyFourHoursAgo = new Date(Date.now() - 2 * 60 * 1000); // 3 minutes in milliseconds
+	const twentyFourHoursAgo = new Date(Date.now() - 2 * 60 * 1000); // 3 minutes in milliseconds
 
 	try {
 		const query = {
@@ -316,7 +321,7 @@ async function updateInactiveAiRobots() {
 }
 
 // Schedule the cron job to run every 1 minute
-cron.schedule('*/5 * * * *', () => {
+cron.schedule('*/3 * * * *', () => {
 	console.log('Checking AiRobots...');
 	updateInactiveAiRobots();
 });
@@ -368,27 +373,27 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	// find parent_1
 	const parent_1 = await User.findOne({
 		customer_id: user.parent_1.customer_id,
-	}).select('trade_com m_balance username');
+	}).select('trade_com m_balance username ai_balance');
 
 	// find parent_2
 	const parent_2 = await User.findOne({
 		customer_id: user.parent_2.customer_id,
-	}).select('trade_com m_balance username');
+	}).select('trade_com m_balance username ai_balance');
 
 	// find parent_3
 	const parent_3 = await User.findOne({
 		customer_id: user.parent_3.customer_id,
-	}).select('trade_com m_balance username');
+	}).select('trade_com m_balance username ai_balance');
 
 	// find parent_4
 	const parent_4 = await User.findOne({
 		customer_id: user.parent_4.customer_id,
-	}).select('trade_com m_balance username');
+	}).select('trade_com m_balance username ai_balance');
 
 	// find parent_5
 	const parent_5 = await User.findOne({
 		customer_id: user.parent_5.customer_id,
-	}).select('trade_com m_balance username');
+	}).select('trade_com m_balance username ai_balance	');
 
 	// find aiRobotRecord by user_id
 	const aiRobotRecord = await AiRobotRecord.findOne({ user_id: user._id });
@@ -410,53 +415,56 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	}
 	company.total_active_ai_balance -= aiRobot.current_investment;
 	company.total_ai_balance += aiRobot.current_investment;
-
+	await user.save();
 	createTransaction(
 		user._id,
 		'cashIn',
 		netProfit,
+		user.m_balance + user.ai_balance,
 		'ai_robot',
 		`Profit from Ai Robot $${Number(netProfit).toFixed(5)} and Refund $${
 			aiRobot.current_investment
 		}`
 	);
-	await user.save();
 
 	// update parent_1 balance
 	parent_1.m_balance += aiRobotCharge * 0.3;
 	parent_1.trade_com.level_1 += aiRobotCharge * 0.3;
+	await parent_1.save();
 	createTransaction(
 		parent_1._id,
 		'cashIn',
 		aiRobotCharge * 0.3,
+		parent_1.m_balance + parent_1.ai_balance,
 		'commission',
 		`1st level Commission from Ai Robot by ${user.username}`
 	);
-	await parent_1.save();
 
 	// update parent_2 balance
 	parent_2.m_balance += aiRobotCharge * 0.25;
 	parent_2.trade_com.level_2 += aiRobotCharge * 0.25;
+	await parent_2.save();
 	createTransaction(
 		parent_2._id,
 		'cashIn',
 		aiRobotCharge * 0.25,
+		parent_2.m_balance + parent_2.ai_balance,
 		'commission',
 		`2nd level Commission from Ai Robot by ${user.username}`
 	);
-	await parent_2.save();
 
 	// update parent_3 balance
 	parent_3.m_balance += aiRobotCharge * 0.2;
 	parent_3.trade_com.level_3 += aiRobotCharge * 0.2;
+	await parent_3.save();
 	createTransaction(
 		parent_3._id,
 		'cashIn',
 		aiRobotCharge * 0.2,
+		parent_3.m_balance + parent_3.ai_balance,
 		'commission',
 		`3rd Commission from Ai Robot by ${user.username}`
 	);
-	await parent_3.save();
 
 	// update parent_4 balance
 	parent_4.m_balance += aiRobotCharge * 0.1;
@@ -465,6 +473,7 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 		parent_4._id,
 		'cashIn',
 		aiRobotCharge * 0.1,
+		parent_4.m_balance + parent_4.ai_balance,
 		'commission',
 		`4th Commission from Ai Robot by ${user.username}`
 	);
@@ -477,6 +486,7 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 		parent_5._id,
 		'cashIn',
 		aiRobotCharge * 0.05,
+		parent_5.m_balance + parent_5.ai_balance,
 		'commission',
 		`5th Commission from Ai Robot by ${user.username}`
 	);
@@ -620,6 +630,7 @@ const updateAiRobot = async (aiRobot) => {
 			user._id,
 			'cashIn',
 			netProfit + aiRobot.current_investment,
+			user.ai_balance + user.m_balance,
 			'ai_robot',
 			`Profit from Ai Robot $${Number(netProfit).toFixed(5)} and Refund $${
 				aiRobot.current_investment
@@ -634,6 +645,7 @@ const updateAiRobot = async (aiRobot) => {
 			parent_1._id,
 			'cashIn',
 			aiRobotCharge * 0.4,
+			parent_1.m_balance + parent_1.ai_balance,
 			'commission',
 			`1st level Commission from Ai Robot by ${user.username}`
 		);
@@ -646,6 +658,7 @@ const updateAiRobot = async (aiRobot) => {
 			parent_2._id,
 			'cashIn',
 			aiRobotCharge * 0.3,
+			parent_2.m_balance + parent_2.ai_balance,
 			'commission',
 			`2nd level Commission from Ai Robot by ${user.username}`
 		);
@@ -658,6 +671,7 @@ const updateAiRobot = async (aiRobot) => {
 			parent_3._id,
 			'cashIn',
 			aiRobotCharge * 0.2,
+			parent_3.m_balance + parent_3.ai_balance,
 			'commission',
 			`3rd Commission from Ai Robot by ${user.username}`
 		);

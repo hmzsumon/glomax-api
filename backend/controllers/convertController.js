@@ -53,13 +53,7 @@ exports.convert = catchAsyncErrors(async (req, res, next) => {
 
 	if (from === 'main') {
 		user.m_balance -= numAmount;
-		createTransaction(
-			user._id,
-			'cashOut',
-			numAmount,
-			'convert',
-			`Convert ${numAmount} from main to ai balance`
-		);
+
 		user.ai_balance += numAmount;
 		convertRecord.main_to_ai_total += numAmount;
 		convertRecord.total_convert += numAmount;
@@ -68,6 +62,15 @@ exports.convert = catchAsyncErrors(async (req, res, next) => {
 			numAmount,
 			from,
 		};
+
+		createTransaction(
+			user._id,
+			'cashOut',
+			numAmount,
+			user.m_balance + user.ai_balance,
+			'convert',
+			`Convert ${numAmount} from main to ai balance`
+		);
 
 		company.total_main_balance -= numAmount;
 		company.total_ai_balance += numAmount;
@@ -82,6 +85,15 @@ exports.convert = catchAsyncErrors(async (req, res, next) => {
 			numAmount,
 			from,
 		};
+
+		createTransaction(
+			user._id,
+			'cashIn',
+			numAmount,
+			user.m_balance + user.ai_balance,
+			'convert',
+			`Convert ${numAmount} from ai to main balance`
+		);
 
 		company.total_main_balance += numAmount;
 		company.total_ai_balance -= numAmount;
