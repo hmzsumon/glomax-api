@@ -852,3 +852,26 @@ exports.getSingleAiRobotAdmin = catchAsyncErrors(async (req, res, next) => {
 		user: newUser,
 	});
 });
+
+// update aiRobot is_claimed true
+exports.updateAiRobotIsClaimed = catchAsyncErrors(async (req, res, next) => {
+	// find all aiRobot is_active true and is_claimed true and status pending
+	const aiRobots = await AiRobot.find({
+		is_active: true,
+		is_claimed: true,
+		status: 'pending',
+	});
+
+	console.log(aiRobots.length);
+
+	for (let i = 0; i < aiRobots.length; i++) {
+		const aiRobot = aiRobots[i];
+		aiRobot.is_claimed = false;
+		await aiRobot.save();
+	}
+
+	res.status(200).json({
+		success: true,
+		message: 'Ai Robot is_claimed updated successfully',
+	});
+});
