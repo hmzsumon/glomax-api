@@ -285,9 +285,9 @@ exports.editAiRobot = catchAsyncErrors(async (req, res, next) => {
 });
 
 async function updateInactiveAiRobots() {
-	// const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+	const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-	const twentyFourHoursAgo = new Date(Date.now() - 2 * 60 * 1000); // 3 minutes in milliseconds
+	// const twentyFourHoursAgo = new Date(Date.now() - 2 * 60 * 1000); // 3 minutes in milliseconds
 
 	try {
 		const query = {
