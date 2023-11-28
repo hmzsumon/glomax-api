@@ -353,12 +353,12 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	const company = await Company.findById(companyId);
 	// console.log(aiRobots.length);
 	let profit = {
-		1: 0.042,
-		2: 0.043,
-		3: 0.044,
-		4: 0.043,
-		5: 0.044,
-		6: 0.045,
+		1: 0.0405,
+		2: 0.0422,
+		3: 0.0441,
+		4: 0.0461,
+		5: 0.0481,
+		6: 0.05,
 	};
 
 	const profit_amount = aiRobot.current_investment * profit[aiRobot.grid_no];
@@ -512,8 +512,8 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	aiRobot.profit_percent = `${Number(
 		profit[aiRobot.grid_no] * 100
 	).toLocaleString('en-US', {
-		minimumFractionDigits: 3,
-		maximumFractionDigits: 5,
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
 	})}%`;
 	aiRobot.profit = profit_amount;
 	aiRobot.trade_charge = aiRobotCharge;
