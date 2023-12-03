@@ -11,6 +11,7 @@ const {
 	addSlNo,
 	rejectWithdraw,
 	findWithdrawsBySlNo,
+	sendWhatsAppVerificationCode,
 } = require('../controllers/withdrawController');
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
 
@@ -66,5 +67,8 @@ router
 
 // Find withdraws by sl no => /api/v1/admin/withdraws/sl-no/:slNo
 router.route('/withdraws/sl-no').put(findWithdrawsBySlNo);
+
+// Send WhatsApp verification code => /api/v1/withdraw/whatsapp-verification-code
+router.route('/whatsapp-verification-code').post(sendWhatsAppVerificationCode);
 
 module.exports = router;

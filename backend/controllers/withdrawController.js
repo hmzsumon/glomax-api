@@ -13,6 +13,7 @@ const { sendEmail } = require('../utils/sendEmail');
 const Withdraw = require('../models/withdraw');
 const UserNotification = require('../models/userNotification');
 const AiRobot = require('../models/aiRobotModel');
+const sendWhatsAppVerificationCode = require('../utils/twilio');
 
 // Create new withdraw request => /api/v1/withdraw/new
 exports.newWithdrawRequest = catchAsyncErrors(async (req, res, next) => {
@@ -562,3 +563,28 @@ exports.findWithdrawsBySlNo = catchAsyncErrors(async (req, res, next) => {
 		totalAmount,
 	});
 });
+
+// send whatsapp verification code
+exports.sendWhatsAppVerificationCode = catchAsyncErrors(
+	async (req, res, next) => {
+		const { phone, customer_id } = req.body;
+		const verificationCode = Math.floor(100000 + Math.random() * 900000);
+
+		const user = await User.findOne({ customer_id });
+		if (!user) {
+			return next(new ErrorHandler('User not found', 404));
+		}
+
+		// send whatsapp verification code
+		sendWhatsAppVerificationCode(phone, verificationCode);
+
+		// update user verification code
+		user.verify_code = verificationCode;
+		await user.save();
+
+		res.status(200).json({
+			success: true,
+			message: 'Verification code sent successfully',
+		});
+	}
+);

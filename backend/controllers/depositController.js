@@ -1106,13 +1106,14 @@ exports.reRejectDeposit = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// update user
-	user.is_deposit_requested = true;
+	user.is_deposit_requested = false;
 	user.m_balance = 0;
 	user.ai_balance = 0;
-	user.is_can_withdraw = false;
+	user.ai_robot = false;
 	user.is_active = false;
 	user.is_newUser = true;
 	user.is_block = true;
+	user.total_deposit -= deposit.amount;
 	await user.save();
 
 	// update deposit
