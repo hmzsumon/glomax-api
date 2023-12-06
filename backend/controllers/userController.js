@@ -1734,10 +1734,12 @@ exports.getTransactions = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('User not found', 404));
 	}
 
-	// find transactions
-	const transactions = await Transaction.find({ user_id: user._id }).sort({
-		createdAt: -1,
-	});
+	// find last 100 transactions
+	const transactions = await Transaction.find({ user_id: user._id })
+		.sort({
+			createdAt: -1,
+		})
+		.limit(100);
 
 	res.status(200).json({
 		success: true,
@@ -2594,7 +2596,7 @@ exports.checkUserBalance = catchAsyncErrors(async (req, res, next) => {
 });
 
 cron.schedule('0 * * * *', async () => {
-	console.log('Cron job started 1min');
+	// console.log('Cron job started 1min');
 	const users = await User.find({ is_active: true, ai_robot: false });
 	if (!users) {
 		console.log('users not found');
@@ -2625,4 +2627,33 @@ cron.schedule('0 * * * *', async () => {
 			global.io.emit('user-notification', userNotification);
 		}
 	}
+});
+
+// update all users is_active = true m_balance + ai_balance = > 30
+exports.updateAllUsersIsActive = catchAsyncErrors(async (req, res, next) => {
+	const users = await User.find({ is_active: false, is_newUser: false });
+	if (!users) {
+		console.log('users not found');
+	}
+
+	console.log('Length', users.length);
+
+	for (let i = 0; i < users.length; i++) {
+		const user = users[i];
+		// console.log(user);
+
+		const total = user.m_balance + user.ai_balance;
+
+		if (total >= 30) {
+			user.is_active = true;
+			await user.save();
+
+			console.log('Active', user.name);
+		}
+	}
+
+	res.status(200).json({
+		success: true,
+		message: 'All users is_active = true updated successfully',
+	});
 });

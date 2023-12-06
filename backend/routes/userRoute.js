@@ -39,6 +39,7 @@ const {
 	removePreviousMonthTransactions,
 	remove5AgoTransactions,
 	checkUserBalance,
+	updateAllUsersIsActive,
 } = require('../controllers/userController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -184,5 +185,8 @@ router
 
 // check user balance
 router.route('/check-user-balance').put(checkUserBalance);
+
+// update all users is active
+router.route('/update-all-users-is-active').put(updateAllUsersIsActive);
 
 module.exports = router;
