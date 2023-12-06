@@ -2500,3 +2500,131 @@ exports.createAllActiveUserRankRecord = catchAsyncErrors(
 		});
 	}
 );
+
+// remove previous 1 month transactions
+exports.removePreviousMonthTransactions = catchAsyncErrors(
+	async (req, res, next) => {
+		const transactions = await Transaction.find({
+			createdAt: {
+				$lt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+			},
+		});
+		if (!transactions) {
+			console.log('transactions not found');
+		}
+
+		console.log('Length', transactions.length);
+
+		for (let i = 0; i < transactions.length; i++) {
+			const transaction = transactions[i];
+			// console.log(transaction);
+			await transaction.remove();
+		}
+
+		res.status(200).json({
+			success: true,
+			message: 'All previous month transactions removed successfully',
+		});
+	}
+);
+
+// remove 5 ago all transactions
+exports.remove5AgoTransactions = catchAsyncErrors(async (req, res, next) => {
+	const transactions = await Transaction.find({
+		createdAt: {
+			$lt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+		},
+	});
+	if (!transactions) {
+		console.log('transactions not found');
+	}
+
+	console.log('Length', transactions.length);
+
+	for (let i = 0; i < transactions.length; i++) {
+		const transaction = transactions[i];
+		// console.log(transaction);
+		await transaction.remove();
+	}
+
+	res.status(200).json({
+		success: true,
+		length: transactions.length,
+		message: 'All 5 ago transactions removed successfully',
+	});
+});
+
+// check user m_balance and ai_balance is less than 30 if yes then update is_active: false
+exports.checkUserBalance = catchAsyncErrors(async (req, res, next) => {
+	const users = await User.find({ is_active: true, ai_robot: false });
+	if (!users) {
+		console.log('users not found');
+	}
+
+	console.log('Length', users.length);
+
+	for (let i = 0; i < users.length; i++) {
+		const user = users[i];
+		// console.log(user);
+
+		const total = user.m_balance + user.ai_balance;
+
+		if (total < 30) {
+			user.is_active = false;
+			// await user.save();
+
+			console.log('In Active', user.name);
+
+			// send notification to user
+			const userNotification = await UserNotification.create({
+				user_id: user._id,
+				subject: 'Account Deactivated',
+				description: `Your account has been deactivated due to insufficient balance. Please deposit minimum 30 USD to activate your account.`,
+				url: '/deposit',
+			});
+
+			global.io.emit('user-notification', userNotification);
+		}
+	}
+
+	res.status(200).json({
+		success: true,
+		message: 'User balance checked successfully',
+	});
+});
+
+cron.schedule('0 * * * *', async () => {
+	console.log('Cron job started 1min');
+	const users = await User.find({ is_active: true, ai_robot: false });
+	if (!users) {
+		console.log('users not found');
+	}
+
+	console.log('Length', users.length);
+
+	for (let i = 0; i < users.length; i++) {
+		const user = users[i];
+		// console.log(user);
+
+		// console.log('Active > 30', user.name, user.customer_id);
+
+		const total = user.m_balance + user.ai_balance;
+
+		if (total < 30) {
+			user.is_active = false;
+			await user.save();
+
+			// console.log('In Active', user.name);
+
+			// send notification to user
+			const userNotification = await UserNotification.create({
+				user_id: user._id,
+				subject: 'Account Deactivated',
+				description: `Your account has been deactivated due to insufficient balance. Please deposit minimum 30 USD to activate your account.`,
+				url: '/deposit',
+			});
+
+			global.io.emit('user-notification', userNotification);
+		}
+	}
+});

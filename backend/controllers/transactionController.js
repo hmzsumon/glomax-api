@@ -1,5 +1,5 @@
 const catchAsyncErrors = require('../middleware/catchAsyncErrors');
-const ErrorHander = require('../utils/errorhander');
+const ErrorHandler = require('../utils/errorhandler');
 const Transaction = require('./../models/transaction');
 const User = require('./../models/userModel');
 

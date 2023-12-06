@@ -36,6 +36,9 @@ const {
 	createAllActiveUserRankRecord,
 	getRankMembers,
 	getRankMembersByRank,
+	removePreviousMonthTransactions,
+	remove5AgoTransactions,
+	checkUserBalance,
 } = require('../controllers/userController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -173,5 +176,13 @@ router.route('/get-rank-members').get(isAuthenticatedUser, getRankMembers);
 router
 	.route('/get-rank-members-by-rank/:rank')
 	.get(isAuthenticatedUser, getRankMembersByRank);
+
+// remove previous month transactions
+router
+	.route('/remove-previous-month-transactions')
+	.delete(remove5AgoTransactions);
+
+// check user balance
+router.route('/check-user-balance').put(checkUserBalance);
 
 module.exports = router;

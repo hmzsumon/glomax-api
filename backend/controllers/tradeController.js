@@ -33,6 +33,11 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('User not found', 404));
 	}
 
+	// check if user is active
+	if (!user.is_active) {
+		return next(new ErrorHandler('User is not active', 400));
+	}
+
 	// check if user has enough balance
 	if (user.m_balance < amount) {
 		return next(new ErrorHandler('Insufficient balance', 400));
@@ -137,43 +142,49 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 	await tradeRecord.save();
 
 	// update parent_1
-	parent_1.m_balance += trade_charge * 0.3;
-	parent_1.trade_com.level_1 += trade_charge * 0.3;
-	await parent_1.save();
-	createTransaction(
-		parent_1._id,
-		'cashIn',
-		trade_charge * 0.3,
-		parent_1.m_balance + parent_1.ai_balance,
-		'trade_commission',
-		`1st level Trade Commission from ${user.username}`
-	);
+	if (parent_1.is_active) {
+		parent_1.m_balance += trade_charge * 0.3;
+		parent_1.trade_com.level_1 += trade_charge * 0.3;
+		await parent_1.save();
+		createTransaction(
+			parent_1._id,
+			'cashIn',
+			trade_charge * 0.3,
+			parent_1.m_balance + parent_1.ai_balance,
+			'trade_commission',
+			`1st level Trade Commission from ${user.username}`
+		);
+	}
 
 	// update parent_2
-	parent_2.m_balance += trade_charge * 0.2;
-	parent_2.trade_com.level_2 += trade_charge * 0.2;
-	await parent_2.save();
-	createTransaction(
-		parent_2._id,
-		'cashIn',
-		trade_charge * 0.2,
-		parent_2.m_balance + parent_2.ai_balance,
-		'trade_commission',
-		`2nd level Trade Commission from ${user.username}`
-	);
+	if (parent_2.is_active) {
+		parent_2.m_balance += trade_charge * 0.2;
+		parent_2.trade_com.level_2 += trade_charge * 0.2;
+		await parent_2.save();
+		createTransaction(
+			parent_2._id,
+			'cashIn',
+			trade_charge * 0.2,
+			parent_2.m_balance + parent_2.ai_balance,
+			'trade_commission',
+			`2nd level Trade Commission from ${user.username}`
+		);
+	}
 
 	// update parent_3
-	parent_3.m_balance += trade_charge * 0.1;
-	parent_3.trade_com.level_3 += trade_charge * 0.1;
-	await parent_3.save();
-	createTransaction(
-		parent_3._id,
-		'cashIn',
-		trade_charge * 0.1,
-		parent_3.m_balance + parent_3.ai_balance,
-		'trade_commission',
-		`3rd level Trade Commission from ${user.username}`
-	);
+	if (parent_3.is_active) {
+		parent_3.m_balance += trade_charge * 0.1;
+		parent_3.trade_com.level_3 += trade_charge * 0.1;
+		await parent_3.save();
+		createTransaction(
+			parent_3._id,
+			'cashIn',
+			trade_charge * 0.1,
+			parent_3.m_balance + parent_3.ai_balance,
+			'trade_commission',
+			`3rd level Trade Commission from ${user.username}`
+		);
+	}
 
 	const total_trade_charge = trade_charge * 0.6;
 	//update company

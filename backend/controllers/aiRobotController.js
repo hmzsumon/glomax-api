@@ -373,27 +373,27 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	// find parent_1
 	const parent_1 = await User.findOne({
 		customer_id: user.parent_1.customer_id,
-	}).select('trade_com m_balance username ai_balance');
+	}).select('trade_com m_balance username ai_balance is_active name');
 
 	// find parent_2
 	const parent_2 = await User.findOne({
 		customer_id: user.parent_2.customer_id,
-	}).select('trade_com m_balance username ai_balance');
+	}).select('trade_com m_balance username ai_balance is_active name');
 
 	// find parent_3
 	const parent_3 = await User.findOne({
 		customer_id: user.parent_3.customer_id,
-	}).select('trade_com m_balance username ai_balance');
+	}).select('trade_com m_balance username ai_balance is_active name');
 
 	// find parent_4
 	const parent_4 = await User.findOne({
 		customer_id: user.parent_4.customer_id,
-	}).select('trade_com m_balance username ai_balance');
+	}).select('trade_com m_balance username ai_balance is_active name');
 
 	// find parent_5
 	const parent_5 = await User.findOne({
 		customer_id: user.parent_5.customer_id,
-	}).select('trade_com m_balance username ai_balance	');
+	}).select('trade_com m_balance username ai_balance is_active name');
 
 	// find aiRobotRecord by user_id
 	const aiRobotRecord = await AiRobotRecord.findOne({ user_id: user._id });
@@ -427,70 +427,89 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 		}`
 	);
 
+	// console.log('parent_1', parent_1.name, parent_1.is_active);
+
 	// update parent_1 balance
-	parent_1.m_balance += aiRobotCharge * 0.3;
-	parent_1.trade_com.level_1 += aiRobotCharge * 0.3;
-	await parent_1.save();
-	createTransaction(
-		parent_1._id,
-		'cashIn',
-		aiRobotCharge * 0.3,
-		parent_1.m_balance + parent_1.ai_balance,
-		'commission',
-		`1st level Commission from Ai Robot by ${user.username}`
-	);
+	if (parent_1.is_active) {
+		// console.log('parent_1 01', parent_1.name);
+		parent_1.m_balance += aiRobotCharge * 0.3;
+		parent_1.trade_com.level_1 += aiRobotCharge * 0.3;
+		await parent_1.save();
+		createTransaction(
+			parent_1._id,
+			'cashIn',
+			aiRobotCharge * 0.3,
+			parent_1.m_balance + parent_1.ai_balance,
+			'commission',
+			`1st level Commission from Ai Robot by ${user.name}`
+		);
+
+		// console.log('parent_1 02', parent_1.name);
+	}
 
 	// update parent_2 balance
-	parent_2.m_balance += aiRobotCharge * 0.25;
-	parent_2.trade_com.level_2 += aiRobotCharge * 0.25;
-	await parent_2.save();
-	createTransaction(
-		parent_2._id,
-		'cashIn',
-		aiRobotCharge * 0.25,
-		parent_2.m_balance + parent_2.ai_balance,
-		'commission',
-		`2nd level Commission from Ai Robot by ${user.username}`
-	);
+	if (parent_2.is_active) {
+		// console.log('parent_2 01', parent_2.name);
+		parent_2.m_balance += aiRobotCharge * 0.2;
+		parent_2.trade_com.level_2 += aiRobotCharge * 0.2;
+		await parent_2.save();
+		createTransaction(
+			parent_2._id,
+			'cashIn',
+			aiRobotCharge * 0.2,
+			parent_2.m_balance + parent_2.ai_balance,
+			'commission',
+			`2nd level Commission from Ai Robot by ${user.name}`
+		);
+	}
 
 	// update parent_3 balance
-	parent_3.m_balance += aiRobotCharge * 0.2;
-	parent_3.trade_com.level_3 += aiRobotCharge * 0.2;
-	await parent_3.save();
-	createTransaction(
-		parent_3._id,
-		'cashIn',
-		aiRobotCharge * 0.2,
-		parent_3.m_balance + parent_3.ai_balance,
-		'commission',
-		`3rd Commission from Ai Robot by ${user.username}`
-	);
+	if (parent_3.is_active) {
+		// console.log('parent_3 01', parent_3.name);
+		parent_3.m_balance += aiRobotCharge * 0.1;
+		parent_3.trade_com.level_3 += aiRobotCharge * 0.1;
+		await parent_3.save();
+		createTransaction(
+			parent_3._id,
+			'cashIn',
+			aiRobotCharge * 0.1,
+			parent_3.m_balance + parent_3.ai_balance,
+			'commission',
+			`3rd Commission from Ai Robot by ${user.name}`
+		);
+	}
 
 	// update parent_4 balance
-	parent_4.m_balance += aiRobotCharge * 0.1;
-	parent_4.trade_com.level_4 += aiRobotCharge * 0.1;
-	createTransaction(
-		parent_4._id,
-		'cashIn',
-		aiRobotCharge * 0.1,
-		parent_4.m_balance + parent_4.ai_balance,
-		'commission',
-		`4th Commission from Ai Robot by ${user.username}`
-	);
-	await parent_4.save();
+	if (parent_4.is_active) {
+		// console.log('parent_4 01', parent_4.name);
+		parent_4.m_balance += aiRobotCharge * 0.05;
+		parent_4.trade_com.level_4 += aiRobotCharge * 0.05;
+		await parent_4.save();
+		createTransaction(
+			parent_4._id,
+			'cashIn',
+			aiRobotCharge * 0.05,
+			parent_4.m_balance + parent_4.ai_balance,
+			'commission',
+			`4th Commission from Ai Robot by ${user.name}`
+		);
+	}
 
 	// update parent_5 balance
-	parent_5.m_balance += aiRobotCharge * 0.05;
-	parent_5.trade_com.level_5 += aiRobotCharge * 0.05;
-	createTransaction(
-		parent_5._id,
-		'cashIn',
-		aiRobotCharge * 0.05,
-		parent_5.m_balance + parent_5.ai_balance,
-		'commission',
-		`5th Commission from Ai Robot by ${user.username}`
-	);
-	await parent_5.save();
+	if (parent_5.is_active) {
+		// console.log('parent_5 01', parent_5.name);
+		parent_5.m_balance += aiRobotCharge * 0.05;
+		parent_5.trade_com.level_5 += aiRobotCharge * 0.05;
+		await parent_5.save();
+		createTransaction(
+			parent_5._id,
+			'cashIn',
+			aiRobotCharge * 0.05,
+			parent_5.m_balance + parent_5.ai_balance,
+			'commission',
+			`5th Commission from Ai Robot by ${user.name}`
+		);
+	}
 
 	// update aiRobotRecord
 	aiRobotRecord.active_robot_id = null;

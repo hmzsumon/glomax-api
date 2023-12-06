@@ -170,18 +170,22 @@ async function checkTxIdMatch(id) {
 			depositDetails.is_new = false;
 
 			// update sponsor
-			parent_1.m_balance += 2;
-			parent_1.b_balance += 2;
-			parent_1.referral_bonus += 2;
-			createTransaction(
-				parent_1._id,
-				'cashIn',
-				2,
-				user.m_balance + user.ai_balance,
-				'bonus',
-				`Referral Bonus from Glomax by ${user.name}`
-			);
-			totalCost += 2;
+			if (parent_1.is_active) {
+				parent_1.m_balance += 2;
+				parent_1.b_balance += 2;
+				parent_1.referral_bonus += 2;
+				await parent_1.save();
+				createTransaction(
+					parent_1._id,
+					'cashIn',
+					2,
+					parent_1.m_balance + parent_1.ai_balance,
+					'bonus',
+					`Referral Bonus from Glomax by ${user.name}`
+				);
+				totalCost += 2;
+			}
+
 			// update user
 			user.is_newUser = false;
 			user.is_active = true;
@@ -202,80 +206,89 @@ async function checkTxIdMatch(id) {
 		await user.save();
 
 		// update parent_1 m_balance 5% of deposit amount
-		parent_1.m_balance += txId.amount * 0.05;
-		parent_1.b_balance += txId.amount * 0.05;
-		parent_1.referral_bonus += txId.amount * 0.05;
-		totalCost += txId.amount * 0.05;
-		createTransaction(
-			parent_1._id,
-			'cashIn',
-			txId.amount * 0.05,
-			parent_1.m_balance + parent_1.ai_balance,
-			'bonus',
-			`1st Level Deposit Bonus from Glomax by ${user.name}`
-		);
-		await parent_1.save();
+		if (parent_1.is_active) {
+			parent_1.m_balance += txId.amount * 0.05;
+			parent_1.b_balance += txId.amount * 0.05;
+			parent_1.referral_bonus += txId.amount * 0.05;
+			await parent_1.save();
+			totalCost += txId.amount * 0.05;
+			createTransaction(
+				parent_1._id,
+				'cashIn',
+				txId.amount * 0.05,
+				parent_1.m_balance + parent_1.ai_balance,
+				'bonus',
+				`1st Level Deposit Bonus from Glomax by ${user.name}`
+			);
+		}
 
 		// update parent_2 m_balance 3% of deposit amount
-		parent_2.m_balance += txId.amount * 0.02;
-		parent_2.b_balance += txId.amount * 0.02;
-		parent_2.referral_bonus += txId.amount * 0.02;
-		totalCost += deposit.amount * 0.02;
-		createTransaction(
-			parent_2._id,
-			'cashIn',
-			txId.amount * 0.02,
-			parent_2.m_balance + parent_2.ai_balance,
-			'bonus',
-			`2nd Level Deposit Bonus from Glomax by ${user.name}`
-		);
-		await parent_2.save();
+		if (parent_2.is_active) {
+			parent_2.m_balance += txId.amount * 0.02;
+			parent_2.b_balance += txId.amount * 0.02;
+			parent_2.referral_bonus += txId.amount * 0.02;
+			await parent_2.save();
+			totalCost += txId.amount * 0.02;
+			createTransaction(
+				parent_2._id,
+				'cashIn',
+				txId.amount * 0.02,
+				parent_2.m_balance + parent_2.ai_balance,
+				'bonus',
+				`2nd Level Deposit Bonus from Glomax by ${user.name}`
+			);
+		}
 
 		// update parent_3 m_balance 2% of deposit amount
-		parent_3.m_balance += txId.amount * 0.01;
-		parent_3.b_balance += txId.amount * 0.01;
-		parent_3.referral_bonus += txId.amount * 0.01;
-		totalCost += deposit.amount * 0.01;
-		createTransaction(
-			parent_3._id,
-			'cashIn',
-			txId.amount * 0.01,
-			parent_3.m_balance + parent_3.ai_balance,
-			'bonus',
-			`3rd Level Deposit Bonus from Glomax by ${user.name}`
-		);
-		await parent_3.save();
+		if (parent_3.is_active) {
+			parent_3.m_balance += txId.amount * 0.01;
+			parent_3.b_balance += txId.amount * 0.01;
+			parent_3.referral_bonus += txId.amount * 0.01;
+			await parent_3.save();
+			totalCost += txId.amount * 0.01;
+			createTransaction(
+				parent_3._id,
+				'cashIn',
+				txId.amount * 0.01,
+				parent_3.m_balance + parent_3.ai_balance,
+				'bonus',
+				`3rd Level Deposit Bonus from Glomax by ${user.name}`
+			);
+		}
 
 		// update parent_4 m_balance 1% of deposit amount
-		parent_4.m_balance += txId.amount * 0.01;
-		parent_4.b_balance += txId.amount * 0.01;
-		parent_4.referral_bonus += txId.amount * 0.01;
-		totalCost += txId.amount * 0.01;
-		createTransaction(
-			parent_4._id,
-			'cashIn',
-			txId.amount * 0.01,
-			parent_4.m_balance + parent_4.ai_balance,
-			'bonus',
-			`4th Level Deposit Bonus from Glomax by ${user.name}`
-		);
-
-		await parent_4.save();
+		if (parent_4.is_active) {
+			parent_4.m_balance += txId.amount * 0.01;
+			parent_4.b_balance += txId.amount * 0.01;
+			parent_4.referral_bonus += txId.amount * 0.01;
+			await parent_4.save();
+			totalCost += txId.amount * 0.01;
+			createTransaction(
+				parent_4._id,
+				'cashIn',
+				txId.amount * 0.01,
+				parent_4.m_balance + parent_4.ai_balance,
+				'bonus',
+				`4th Level Deposit Bonus from Glomax by ${user.name}`
+			);
+		}
 
 		// update parent_5 m_balance 1% of deposit amount
-		parent_5.m_balance += txId.amount * 0.01;
-		parent_5.b_balance += txId.amount * 0.01;
-		parent_5.referral_bonus += txId.amount * 0.01;
-		totalCost += txId.amount * 0.01;
-		createTransaction(
-			parent_5._id,
-			'cashIn',
-			txId.amount * 0.01,
-			parent_5.m_balance + parent_5.ai_balance,
-			'bonus',
-			`5th Level Deposit Bonus from Glomax by ${user.name}`
-		);
-		await parent_5.save();
+		if (parent_5.is_active) {
+			parent_5.m_balance += txId.amount * 0.01;
+			parent_5.b_balance += txId.amount * 0.01;
+			parent_5.referral_bonus += txId.amount * 0.01;
+			await parent_5.save();
+			totalCost += txId.amount * 0.01;
+			createTransaction(
+				parent_5._id,
+				'cashIn',
+				txId.amount * 0.01,
+				parent_5.m_balance + parent_5.ai_balance,
+				'bonus',
+				`5th Level Deposit Bonus from Glomax by ${user.name}`
+			);
+		}
 
 		//update deposit
 		deposit.status = 'approved';
@@ -687,18 +700,21 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		depositDetails.is_new = false;
 
 		// update sponsor
-		parent_1.m_balance += 2;
-		parent_1.b_balance += 2;
-		parent_1.referral_bonus += 2;
-		createTransaction(
-			parent_1._id,
-			'cashIn',
-			2,
-			user.m_balance + user.ai_balance,
-			'bonus',
-			`Referral Bonus from Glomax by ${user.name}`
-		);
-		totalCost += 2;
+		if (parent_1.is_active) {
+			parent_1.m_balance += 2;
+			parent_1.b_balance += 2;
+			parent_1.referral_bonus += 2;
+			await parent_1.save();
+			createTransaction(
+				parent_1._id,
+				'cashIn',
+				2,
+				parent_1.m_balance + parent_1.ai_balance,
+				'bonus',
+				`Referral Bonus from Glomax by ${user.name}`
+			);
+			totalCost += 2;
+		}
 		// update user
 		user.is_newUser = false;
 		user.is_active = true;
@@ -719,80 +735,89 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	await user.save();
 
 	// update parent_1 m_balance 5% of deposit amount
-	parent_1.m_balance += deposit.amount * 0.05;
-	parent_1.b_balance += deposit.amount * 0.05;
-	parent_1.referral_bonus += deposit.amount * 0.05;
-	totalCost += deposit.amount * 0.05;
-	createTransaction(
-		parent_1._id,
-		'cashIn',
-		deposit.amount * 0.05,
-		parent_1.m_balance + parent_1.ai_balance,
-		'bonus',
-		`1st Level Deposit Bonus from Glomax by ${user.name}`
-	);
-	await parent_1.save();
+	if (parent_1.is_active) {
+		parent_1.m_balance += deposit.amount * 0.05;
+		parent_1.b_balance += deposit.amount * 0.05;
+		parent_1.referral_bonus += deposit.amount * 0.05;
+		await parent_1.save();
+		totalCost += deposit.amount * 0.05;
+		createTransaction(
+			parent_1._id,
+			'cashIn',
+			deposit.amount * 0.05,
+			parent_1.m_balance + parent_1.ai_balance,
+			'bonus',
+			`1st Level Deposit Bonus from Glomax by ${user.name}`
+		);
+	}
 
 	// update parent_2 m_balance 3% of deposit amount
-	parent_2.m_balance += deposit.amount * 0.02;
-	parent_2.b_balance += deposit.amount * 0.02;
-	parent_2.referral_bonus += deposit.amount * 0.02;
-	totalCost += deposit.amount * 0.02;
-	createTransaction(
-		parent_2._id,
-		'cashIn',
-		deposit.amount * 0.02,
-		parent_2.m_balance + parent_2.ai_balance,
-		'bonus',
-		`2nd Level Deposit Bonus from Glomax by ${user.name}`
-	);
-	await parent_2.save();
+	if (parent_2.is_active) {
+		parent_2.m_balance += deposit.amount * 0.02;
+		parent_2.b_balance += deposit.amount * 0.02;
+		parent_2.referral_bonus += deposit.amount * 0.02;
+		await parent_2.save();
+		totalCost += deposit.amount * 0.02;
+		createTransaction(
+			parent_2._id,
+			'cashIn',
+			deposit.amount * 0.02,
+			parent_2.m_balance + parent_2.ai_balance,
+			'bonus',
+			`2nd Level Deposit Bonus from Glomax by ${user.name}`
+		);
+	}
 
 	// update parent_3 m_balance 2% of deposit amount
-	parent_3.m_balance += deposit.amount * 0.01;
-	parent_3.b_balance += deposit.amount * 0.01;
-	parent_3.referral_bonus += deposit.amount * 0.01;
-	totalCost += deposit.amount * 0.01;
-	createTransaction(
-		parent_3._id,
-		'cashIn',
-		deposit.amount * 0.01,
-		parent_3.m_balance + parent_3.ai_balance,
-		'bonus',
-		`3rd Level Deposit Bonus from Glomax by ${user.name}`
-	);
-	await parent_3.save();
+	if (parent_3.is_active) {
+		parent_3.m_balance += deposit.amount * 0.01;
+		parent_3.b_balance += deposit.amount * 0.01;
+		parent_3.referral_bonus += deposit.amount * 0.01;
+		await parent_3.save();
+		totalCost += deposit.amount * 0.01;
+		createTransaction(
+			parent_3._id,
+			'cashIn',
+			deposit.amount * 0.01,
+			parent_3.m_balance + parent_3.ai_balance,
+			'bonus',
+			`3rd Level Deposit Bonus from Glomax by ${user.name}`
+		);
+	}
 
 	// update parent_4 m_balance 1% of deposit amount
-	parent_4.m_balance += deposit.amount * 0.01;
-	parent_4.b_balance += deposit.amount * 0.01;
-	parent_4.referral_bonus += deposit.amount * 0.01;
-	totalCost += deposit.amount * 0.01;
-	createTransaction(
-		parent_4._id,
-		'cashIn',
-		deposit.amount * 0.01,
-		parent_4.m_balance + parent_4.ai_balance,
-		'bonus',
-		`4th Level Deposit Bonus from Glomax by ${user.name}`
-	);
-
-	await parent_4.save();
+	if (parent_4.is_active) {
+		parent_4.m_balance += deposit.amount * 0.01;
+		parent_4.b_balance += deposit.amount * 0.01;
+		parent_4.referral_bonus += deposit.amount * 0.01;
+		await parent_4.save();
+		totalCost += deposit.amount * 0.01;
+		createTransaction(
+			parent_4._id,
+			'cashIn',
+			deposit.amount * 0.01,
+			parent_4.m_balance + parent_4.ai_balance,
+			'bonus',
+			`4th Level Deposit Bonus from Glomax by ${user.name}`
+		);
+	}
 
 	// update parent_5 m_balance 1% of deposit amount
-	parent_5.m_balance += deposit.amount * 0.01;
-	parent_5.b_balance += deposit.amount * 0.01;
-	parent_5.referral_bonus += deposit.amount * 0.01;
-	totalCost += deposit.amount * 0.01;
-	createTransaction(
-		parent_5._id,
-		'cashIn',
-		deposit.amount * 0.01,
-		parent_5.m_balance + parent_5.ai_balance,
-		'bonus',
-		`5th Level Deposit Bonus from Glomax by ${user.name}`
-	);
-	await parent_5.save();
+	if (parent_5.is_active) {
+		parent_5.m_balance += deposit.amount * 0.01;
+		parent_5.b_balance += deposit.amount * 0.01;
+		parent_5.referral_bonus += deposit.amount * 0.01;
+		await parent_5.save();
+		totalCost += deposit.amount * 0.01;
+		createTransaction(
+			parent_5._id,
+			'cashIn',
+			deposit.amount * 0.01,
+			parent_5.m_balance + parent_5.ai_balance,
+			'bonus',
+			`5th Level Deposit Bonus from Glomax by ${user.name}`
+		);
+	}
 
 	//update deposit details
 	deposit.status = 'approved';
