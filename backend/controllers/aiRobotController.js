@@ -362,13 +362,13 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	};
 
 	const profit_amount = aiRobot.current_investment * profit[aiRobot.grid_no];
-	console.log('profit_amount', profit_amount);
+	// console.log('profit_amount', profit_amount);
 	const reFundAmount = aiRobot.current_investment + profit_amount;
 	// console.log('reFundAmount', reFundAmount);
 	const aiRobotCharge = aiRobot.current_investment * 0.015;
 	// console.log('aiRobotCharge', aiRobotCharge);
 	const netProfit = profit_amount - aiRobotCharge;
-	console.log('netProfit', netProfit);
+	// console.log('netProfit', netProfit);
 
 	// find parent_1
 	const parent_1 = await User.findOne({
@@ -450,13 +450,13 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	// update parent_2 balance
 	if (parent_2.is_active) {
 		// console.log('parent_2 01', parent_2.name);
-		parent_2.m_balance += aiRobotCharge * 0.2;
-		parent_2.trade_com.level_2 += aiRobotCharge * 0.2;
+		parent_2.m_balance += aiRobotCharge * 0.25;
+		parent_2.trade_com.level_2 += aiRobotCharge * 0.25;
 		await parent_2.save();
 		createTransaction(
 			parent_2._id,
 			'cashIn',
-			aiRobotCharge * 0.2,
+			aiRobotCharge * 0.25,
 			parent_2.m_balance + parent_2.ai_balance,
 			'commission',
 			`2nd level Commission from Ai Robot by ${user.name}`
@@ -466,13 +466,13 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	// update parent_3 balance
 	if (parent_3.is_active) {
 		// console.log('parent_3 01', parent_3.name);
-		parent_3.m_balance += aiRobotCharge * 0.1;
-		parent_3.trade_com.level_3 += aiRobotCharge * 0.1;
+		parent_3.m_balance += aiRobotCharge * 0.2;
+		parent_3.trade_com.level_3 += aiRobotCharge * 0.2;
 		await parent_3.save();
 		createTransaction(
 			parent_3._id,
 			'cashIn',
-			aiRobotCharge * 0.1,
+			aiRobotCharge * 0.2,
 			parent_3.m_balance + parent_3.ai_balance,
 			'commission',
 			`3rd Commission from Ai Robot by ${user.name}`
@@ -482,13 +482,13 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	// update parent_4 balance
 	if (parent_4.is_active) {
 		// console.log('parent_4 01', parent_4.name);
-		parent_4.m_balance += aiRobotCharge * 0.05;
-		parent_4.trade_com.level_4 += aiRobotCharge * 0.05;
+		parent_4.m_balance += aiRobotCharge * 0.1;
+		parent_4.trade_com.level_4 += aiRobotCharge * 0.1;
 		await parent_4.save();
 		createTransaction(
 			parent_4._id,
 			'cashIn',
-			aiRobotCharge * 0.05,
+			aiRobotCharge * 0.1,
 			parent_4.m_balance + parent_4.ai_balance,
 			'commission',
 			`4th Commission from Ai Robot by ${user.name}`
@@ -510,6 +510,12 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 			`5th Commission from Ai Robot by ${user.name}`
 		);
 	}
+
+	// console.log('parent_1', parent_1.name, 'amount', aiRobotCharge * 0.3);
+	// console.log('parent_2', parent_2.name, 'amount', aiRobotCharge * 0.25);
+	// console.log('parent_3', parent_3.name, 'amount', aiRobotCharge * 0.2);
+	// console.log('parent_4', parent_4.name, 'amount', aiRobotCharge * 0.1);
+	// console.log('parent_5', parent_5.name, 'amount', aiRobotCharge * 0.05);
 
 	// update aiRobotRecord
 	aiRobotRecord.active_robot_id = null;

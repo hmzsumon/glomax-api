@@ -1142,7 +1142,6 @@ exports.reRejectDeposit = catchAsyncErrors(async (req, res, next) => {
 	user.ai_balance = 0;
 	user.ai_robot = false;
 	user.is_active = false;
-	user.is_newUser = true;
 	user.is_block = true;
 	user.total_deposit -= deposit.amount;
 	await user.save();
