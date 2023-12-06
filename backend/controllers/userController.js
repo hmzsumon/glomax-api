@@ -2600,8 +2600,6 @@ cron.schedule('0 * * * *', async () => {
 		console.log('users not found');
 	}
 
-	console.log('Length', users.length);
-
 	for (let i = 0; i < users.length; i++) {
 		const user = users[i];
 		// console.log(user);
@@ -2621,7 +2619,7 @@ cron.schedule('0 * * * *', async () => {
 				user_id: user._id,
 				subject: 'Account Deactivated',
 				description: `Your account has been deactivated due to insufficient balance. Please deposit minimum 30 USD to activate your account.`,
-				url: '/deposit',
+				url: '/deposits',
 			});
 
 			global.io.emit('user-notification', userNotification);

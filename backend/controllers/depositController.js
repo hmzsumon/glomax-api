@@ -125,6 +125,9 @@ async function checkTxIdMatch(id) {
 		}
 
 		// update user
+		if (user.is_active === false) {
+			user.is_active = true;
+		}
 		user.is_deposit_requested = false;
 		user.m_balance += txId.amount;
 		user.is_can_withdraw = false;
@@ -655,6 +658,9 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// update user
+	if (user.is_active === false) {
+		user.is_active = true;
+	}
 	user.is_deposit_requested = false;
 	user.m_balance += deposit.amount;
 	user.is_can_withdraw = false;
