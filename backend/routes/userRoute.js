@@ -40,6 +40,7 @@ const {
 	remove5AgoTransactions,
 	checkUserBalance,
 	updateAllUsersIsActive,
+	changePassword,
 } = require('../controllers/userController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -188,5 +189,8 @@ router.route('/check-user-balance').put(checkUserBalance);
 
 // update all users is active
 router.route('/update-all-users-is-active').put(updateAllUsersIsActive);
+
+// change password
+router.route('/change-password').put(isAuthenticatedUser, changePassword);
 
 module.exports = router;

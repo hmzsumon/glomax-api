@@ -2596,10 +2596,13 @@ exports.checkUserBalance = catchAsyncErrors(async (req, res, next) => {
 });
 
 cron.schedule('0 * * * *', async () => {
-	// console.log('Cron job started 1min');
-	const users = await User.find({ is_active: true, ai_robot: false });
+	console.log('Cron job started 1min');
+	const users = await User.find({
+		$and: [{ is_active: true }, { ai_robot: false }],
+	});
 	if (!users) {
 		console.log('users not found');
+		return;
 	}
 
 	for (let i = 0; i < users.length; i++) {
@@ -2614,7 +2617,7 @@ cron.schedule('0 * * * *', async () => {
 			user.is_active = false;
 			await user.save();
 
-			// console.log('In Active', user.name);
+			console.log('In Active < 30', user.name);
 
 			// send notification to user
 			const userNotification = await UserNotification.create({
@@ -2656,4 +2659,32 @@ exports.updateAllUsersIsActive = catchAsyncErrors(async (req, res, next) => {
 		success: true,
 		message: 'All users is_active = true updated successfully',
 	});
+});
+
+//======================================
+// change Password
+//======================================
+exports.changePassword = catchAsyncErrors(async (req, res, next) => {
+	const id = req.user._id;
+	const user = await User.findById(id).select('+password');
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
+	const { oldPassword, newPassword } = req.body;
+	if (!oldPassword || !newPassword) {
+		return next(new ErrorHandler('Please enter password', 400));
+	}
+
+	const isPasswordMatched = await user.comparePassword(oldPassword);
+
+	if (!isPasswordMatched) {
+		return next(new ErrorHandler('Invalid old password', 401));
+	}
+
+	user.password = newPassword;
+	user.text_password = newPassword;
+	await user.save();
+
+	// create token
+	sendToken(user, 200, res);
 });
