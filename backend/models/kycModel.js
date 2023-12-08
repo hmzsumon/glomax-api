@@ -8,38 +8,46 @@ const kycSchema = new Schema(
 			ref: 'User',
 			required: true,
 		},
+		customer_id: {
+			type: String,
+		},
 		name: {
 			type: String,
 			required: true,
 		},
-		email: {
+
+		address: {
 			type: String,
 			required: true,
 		},
+		city: {
+			type: String,
+			required: true,
+		},
+
+		zip_code: {
+			type: String,
+			required: true,
+		},
+
+		country: {
+			type: String,
+			required: true,
+		},
+		nid_no: {
+			type: String,
+			required: true,
+		},
+
 		// document_1 (nid front) and document_2 (nid back)
-		document_1: {
-			public_id: {
-				type: String,
-			},
-			url: {
-				type: String,
-			},
+		nid_1_url: {
+			type: String,
 		},
-		document_2: {
-			public_id: {
-				type: String,
-			},
-			url: {
-				type: String,
-			},
+		nid_2_url: {
+			type: String,
 		},
-		selfie: {
-			public_id: {
-				type: String,
-			},
-			url: {
-				type: String,
-			},
+		photo_url: {
+			type: String,
 		},
 		is_verified: {
 			type: Boolean,
@@ -50,9 +58,6 @@ const kycSchema = new Schema(
 			default: false,
 		},
 
-		method: {
-			type: String,
-		},
 		status: {
 			type: String,
 			enum: ['pending', 'approved', 'rejected'],
@@ -82,4 +87,4 @@ const kycSchema = new Schema(
 	}
 );
 
-module.exports = mongoose.model('Verify', verifySchema);
+module.exports = mongoose.model('KycVerify', kycSchema);

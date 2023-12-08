@@ -26,6 +26,7 @@ const Company = require('../models/companyModel');
 const companyId = process.env.COMPANY_ID;
 const cron = require('node-cron');
 const RankRecord = require('../models/rankRecord');
+const KycVerify = require('../models/kycModel');
 
 //======================================
 //seed user => /api/v1/seed/user
@@ -2687,4 +2688,46 @@ exports.changePassword = catchAsyncErrors(async (req, res, next) => {
 
 	// create token
 	sendToken(user, 200, res);
+});
+
+// submit kyc
+exports.submitKyc = catchAsyncErrors(async (req, res, next) => {
+	const userId = req.user._id;
+	const { name, address, city, zip, country, nidNo, nidOne, nidTwo, photo } =
+		req.body;
+
+	// find user by id
+	const user = await User.findById(userId);
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
+
+	// check if user already submitted kyc
+	if (user.is_verify_request === true) {
+		return next(new ErrorHandler('KYC already submitted', 400));
+	}
+
+	// create kyc record
+	await KycVerify.create({
+		user_id: userId,
+		customer_id: user.customer_id,
+		name,
+		address,
+		city,
+		zip_code: zip,
+		country,
+		nid_no: nidNo,
+		nid_1_url: nidOne,
+		nid_2_url: nidTwo,
+		photo_url: photo,
+	});
+
+	// update user
+	user.is_verify_request = true;
+	await user.save();
+
+	res.status(200).json({
+		success: true,
+		message: 'KYC submitted successfully',
+	});
 });

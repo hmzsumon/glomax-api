@@ -41,6 +41,7 @@ const {
 	checkUserBalance,
 	updateAllUsersIsActive,
 	changePassword,
+	submitKyc,
 } = require('../controllers/userController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -192,5 +193,8 @@ router.route('/update-all-users-is-active').put(updateAllUsersIsActive);
 
 // change password
 router.route('/change-password').put(isAuthenticatedUser, changePassword);
+
+// submit kyc
+router.route('/submit-kyc').post(isAuthenticatedUser, submitKyc);
 
 module.exports = router;
