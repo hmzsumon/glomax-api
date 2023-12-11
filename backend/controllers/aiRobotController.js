@@ -375,35 +375,35 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	const parent_1 = await User.findOne({
 		customer_id: user.parent_1.customer_id,
 	}).select(
-		'trade_com m_balance username ai_balance is_active name total_commission'
+		'trade_com m_balance username ai_balance is_active name total_commission kyc_verified'
 	);
 
 	// find parent_2
 	const parent_2 = await User.findOne({
 		customer_id: user.parent_2.customer_id,
 	}).select(
-		'trade_com m_balance username ai_balance is_active name total_commission'
+		'trade_com m_balance username ai_balance is_active name total_commission kyc_verified'
 	);
 
 	// find parent_3
 	const parent_3 = await User.findOne({
 		customer_id: user.parent_3.customer_id,
 	}).select(
-		'trade_com m_balance username ai_balance is_active name total_commission'
+		'trade_com m_balance username ai_balance is_active name total_commission kyc_verified'
 	);
 
 	// find parent_4
 	const parent_4 = await User.findOne({
 		customer_id: user.parent_4.customer_id,
 	}).select(
-		'trade_com m_balance username ai_balance is_active name total_commission'
+		'trade_com m_balance username ai_balance is_active name total_commission kyc_verified'
 	);
 
 	// find parent_5
 	const parent_5 = await User.findOne({
 		customer_id: user.parent_5.customer_id,
 	}).select(
-		'trade_com m_balance username ai_balance is_active name total_commission'
+		'trade_com m_balance username ai_balance is_active name total_commission kyc_verified'
 	);
 
 	// find aiRobotRecord by user_id
@@ -473,7 +473,7 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	// console.log('parent_1', parent_1.name, parent_1.is_active);
 
 	// update parent_1 balance
-	if (parent_1.is_active) {
+	if (parent_1.is_active && parent_1.kyc_verified) {
 		parent_1.m_balance += aiRobotCharge * 0.3;
 		parent_1.trade_com.level_1 += aiRobotCharge * 0.3;
 
@@ -492,7 +492,7 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// update parent_2 balance
-	if (parent_2.is_active) {
+	if (parent_2.is_active && parent_2.kyc_verified) {
 		// console.log('parent_2 01', parent_2.name);
 		parent_2.m_balance += aiRobotCharge * 0.25;
 		parent_2.trade_com.level_2 += aiRobotCharge * 0.25;
@@ -509,7 +509,7 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// update parent_3 balance
-	if (parent_3.is_active) {
+	if (parent_3.is_active && parent_3.kyc_verified) {
 		// console.log('parent_3 01', parent_3.name);
 		parent_3.m_balance += aiRobotCharge * 0.2;
 		parent_3.trade_com.level_3 += aiRobotCharge * 0.2;
@@ -526,7 +526,7 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// update parent_4 balance
-	if (parent_4.is_active) {
+	if (parent_4.is_active && parent_4.kyc_verified) {
 		// console.log('parent_4 01', parent_4.name);
 		parent_4.m_balance += aiRobotCharge * 0.1;
 		parent_4.trade_com.level_4 += aiRobotCharge * 0.1;
@@ -543,7 +543,7 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// update parent_5 balance
-	if (parent_5.is_active) {
+	if (parent_5.is_active && parent_5.kyc_verified) {
 		// console.log('parent_5 01', parent_5.name);
 		parent_5.m_balance += aiRobotCharge * 0.05;
 		parent_5.trade_com.level_5 += aiRobotCharge * 0.05;

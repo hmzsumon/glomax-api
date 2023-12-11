@@ -105,7 +105,7 @@ exports.approveKyc = catchAsyncErrors(async (req, res, next) => {
 		link: '/profile',
 	});
 
-	global.io.emit('notification', userNotification);
+	global.io.emit('user-notification', userNotification);
 
 	// send email to user
 	const html = templateKycApprove(user.name);
