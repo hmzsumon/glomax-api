@@ -323,6 +323,7 @@ const updateTrade = async (trade, retryCount = 0) => {
 		company.game.game_cost += totalProfit;
 		// update user m_balance
 		user.e_balance += profit;
+		user.total_e_balance += profit;
 		user.m_balance += trade.trade_amount;
 		// console.log('totalProfit', totalProfit, typeof totalProfit);
 		company.total_main_balance += Number(totalProfit);
@@ -475,6 +476,7 @@ exports.updateTrade = catchAsyncErrors(async (req, res, next) => {
 		// update user m_balance
 		user.m_balance += trade.trade_amount;
 		user.e_balance += profit;
+		user.total_e_balance += profit;
 		await user.save();
 		createTransaction(
 			user._id,

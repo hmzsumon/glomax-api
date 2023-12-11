@@ -2111,6 +2111,7 @@ exports.claimRankBonus = catchAsyncErrors(async (req, res, next) => {
 
 	// update user rank_claimed: true
 	user.e_balance += numAmount;
+	user.total_e_balance += numAmount;
 	createTransaction(
 		user._id,
 		'cashIn',

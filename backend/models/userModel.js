@@ -73,6 +73,12 @@ const userSchema = new mongoose.Schema(
 			default: 0,
 		},
 
+		// total e balance
+		total_e_balance: {
+			type: Number,
+			default: 0,
+		},
+
 		// ai balance (ai balance is used for ai trading)
 		ai_balance: {
 			type: Number,

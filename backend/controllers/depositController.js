@@ -175,6 +175,7 @@ async function checkTxIdMatch(id) {
 			// update sponsor
 			if (parent_1.is_active) {
 				parent_1.e_balance += 2;
+				parent_1.total_e_balance += 2;
 				parent_1.b_balance += 2;
 				parent_1.referral_bonus += 2;
 				await parent_1.save();
@@ -708,6 +709,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		// update sponsor
 		if (parent_1.is_active) {
 			parent_1.e_balance += 2;
+			parent_1.total_e_balance += 2;
 			parent_1.b_balance += 2;
 			parent_1.referral_bonus += 2;
 			await parent_1.save();

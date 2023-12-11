@@ -414,6 +414,7 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	user.is_can_withdraw = true;
 	user.ai_balance += aiRobot.current_investment;
 	user.e_balance += netProfit;
+	user.total_e_balance += netProfit;
 	user.p_ai_balance = 0;
 
 	// burn user balance by user total_commission
@@ -421,6 +422,7 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 		const total_balance = user.m_balance + user.ai_balance;
 		const diff = total_balance - user.total_commission;
 		user.e_balance += user.total_commission * 0.05;
+		user.total_e_balance += user.total_commission * 0.05;
 		createTransaction(
 			user._id,
 			'cashIn',
