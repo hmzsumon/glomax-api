@@ -2703,6 +2703,12 @@ exports.submitKyc = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('User not found', 404));
 	}
 
+	// check if nid no already taken
+	const existNidNo = await KycVerify.findOne({ nid_no: nidNo });
+	if (existNidNo) {
+		return next(new ErrorHandler('NID number already taken', 400));
+	}
+
 	// check if user already submitted kyc
 	if (user.is_verify_request === true) {
 		return next(new ErrorHandler('KYC already submitted', 400));

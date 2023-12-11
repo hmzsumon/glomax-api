@@ -743,7 +743,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	await user.save();
 
 	// update parent_1 m_balance 5% of deposit amount
-	if (parent_1.is_active) {
+	if (parent_1.is_active && parent_1.kyc_verified) {
 		parent_1.m_balance += deposit.amount * 0.05;
 		parent_1.b_balance += deposit.amount * 0.05;
 		parent_1.total_commission += deposit.amount * 0.05;
@@ -760,7 +760,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// update parent_2 m_balance 3% of deposit amount
-	if (parent_2.is_active) {
+	if (parent_2.is_active && parent_2.kyc_verified) {
 		parent_2.m_balance += deposit.amount * 0.02;
 		parent_2.b_balance += deposit.amount * 0.02;
 		parent_2.total_commission += deposit.amount * 0.02;
@@ -777,7 +777,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// update parent_3 m_balance 2% of deposit amount
-	if (parent_3.is_active) {
+	if (parent_3.is_active && parent_3.kyc_verified) {
 		parent_3.m_balance += deposit.amount * 0.01;
 		parent_3.b_balance += deposit.amount * 0.01;
 		parent_3.total_commission += deposit.amount * 0.01;
@@ -794,7 +794,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// update parent_4 m_balance 1% of deposit amount
-	if (parent_4.is_active) {
+	if (parent_4.is_active && parent_4.kyc_verified) {
 		parent_4.m_balance += deposit.amount * 0.01;
 		parent_4.b_balance += deposit.amount * 0.01;
 		parent_4.total_commission += deposit.amount * 0.01;
@@ -811,7 +811,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// update parent_5 m_balance 1% of deposit amount
-	if (parent_5.is_active) {
+	if (parent_5.is_active && parent_5.kyc_verified) {
 		parent_5.m_balance += deposit.amount * 0.01;
 		parent_5.b_balance += deposit.amount * 0.01;
 		parent_5.total_commission += deposit.amount * 0.01;

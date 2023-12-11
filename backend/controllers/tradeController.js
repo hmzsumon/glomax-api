@@ -142,7 +142,7 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 	await tradeRecord.save();
 
 	// update parent_1
-	if (parent_1.is_active) {
+	if (parent_1.is_active && parent_1.kyc_verified) {
 		parent_1.m_balance += trade_charge * 0.3;
 		parent_1.trade_com.level_1 += trade_charge * 0.3;
 		parent_1.total_commission += trade_charge * 0.3;
@@ -158,7 +158,7 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// update parent_2
-	if (parent_2.is_active) {
+	if (parent_2.is_active && parent_2.kyc_verified) {
 		parent_2.m_balance += trade_charge * 0.2;
 		parent_2.trade_com.level_2 += trade_charge * 0.2;
 		parent_2.total_commission += trade_charge * 0.2;
@@ -174,7 +174,7 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// update parent_3
-	if (parent_3.is_active) {
+	if (parent_3.is_active && parent_3.kyc_verified) {
 		parent_3.m_balance += trade_charge * 0.1;
 		parent_3.trade_com.level_3 += trade_charge * 0.1;
 		parent_3.total_commission += trade_charge * 0.1;
