@@ -9,29 +9,32 @@ const templateKycApprove = require('../utils/templateKycApprove');
 // get all pending kyc
 exports.getAllPendingKyc = catchAsyncErrors(async (req, res, next) => {
 	const kyc = await KycVerify.find({ status: 'pending' });
-	const kycList = [];
 
-	for (let i = 0; i < kyc.length; i++) {
-		const neKyc = kyc[i];
-		// find user by user_id
-		const user = await User.findById(neKyc.user_id);
+	const kycList = await Promise.all(
+		kyc.map(async (neKyc) => {
+			const user = await User.findById(neKyc.user_id, {
+				email: 1,
+				m_balance: 1,
+				ai_balance: 1,
+				p_ai_balance: 1,
+				rank: 1,
+			});
 
-		const ne = {
-			_id: neKyc._id,
-			user_id: neKyc.user_id,
-			customer_id: neKyc.customer_id,
-			name: neKyc.name,
-			email: user.email,
-			address: neKyc.address,
-			city: neKyc.city,
-			user_country: neKyc.country,
-			zip_code: neKyc.zip_code,
-			balance: user.m_balance + user.ai_balance + user.p_ai_balance,
-			rank: user.rank,
-		};
-
-		kycList.push(ne);
-	}
+			return {
+				_id: neKyc._id,
+				user_id: neKyc.user_id,
+				customer_id: neKyc.customer_id,
+				name: neKyc.name,
+				email: user.email,
+				address: neKyc.address,
+				city: neKyc.city,
+				user_country: neKyc.country,
+				zip_code: neKyc.zip_code,
+				balance: user.m_balance + user.ai_balance + user.p_ai_balance,
+				rank: user.rank,
+			};
+		})
+	);
 
 	res.status(200).json({
 		success: true,
