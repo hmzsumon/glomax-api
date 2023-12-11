@@ -1,4 +1,5 @@
-module.exports = function templateKycReject(name, reasons) { return `
+module.exports = function templateKycReject(name, reasons) {
+	return `
 <!DOCTYPE html>
 <html>
 	<head>
@@ -60,8 +61,7 @@ module.exports = function templateKycReject(name, reasons) { return `
 					rejected due to the following reasons:
 				</p>
 				<ul>
-					<li>Incorrect personal information.</li>
-					<li>Mismatch with provided documents.</li>
+					${reasons.map((reason) => `<li>${reason}</li>`)}
 				</ul>
 
 				<p>
@@ -89,4 +89,5 @@ module.exports = function templateKycReject(name, reasons) { return `
 		</div>
 	</body>
 </html>
-`; };
+`;
+};

@@ -8,7 +8,9 @@ const {
 	getAllPendingKyc,
 	getSinglePendingKyc,
 	approveKyc,
+	rejectKyc,
 } = require('../controllers/kycController');
+const upload = multer({});
 
 // get pending kyc
 router
@@ -24,5 +26,10 @@ router
 router
 	.route('/admin/kyc/approve/:id')
 	.put(isAuthenticatedUser, authorizeRoles('admin'), approveKyc);
+
+// reject kyc
+router
+	.route('/admin/kyc/reject')
+	.put(upload.none(), isAuthenticatedUser, authorizeRoles('admin'), rejectKyc);
 
 module.exports = router;

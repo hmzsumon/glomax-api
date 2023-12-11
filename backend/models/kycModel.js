@@ -69,9 +69,7 @@ const kycSchema = new Schema(
 		rejected_at: {
 			type: Date,
 		},
-		reject_reason: {
-			type: String,
-		},
+		reject_reasons: [],
 		update_by: {
 			userId: {
 				type: mongoose.Schema.Types.ObjectId,

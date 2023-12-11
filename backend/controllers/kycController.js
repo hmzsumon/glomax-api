@@ -5,6 +5,7 @@ const User = require('../models/userModel');
 const KycVerify = require('../models/kycModel');
 const { sendEmail } = require('../utils/sendEmail');
 const templateKycApprove = require('../utils/templateKycApprove');
+const templateKycReject = require('../utils/templateKycReject');
 
 // get all pending kyc
 exports.getAllPendingKyc = catchAsyncErrors(async (req, res, next) => {
@@ -44,10 +45,12 @@ exports.getAllPendingKyc = catchAsyncErrors(async (req, res, next) => {
 
 // get single pending kyc
 exports.getSinglePendingKyc = catchAsyncErrors(async (req, res, next) => {
-	console.log('req.params.id', req.params.id);
+	// console.log('req.params.id', req.params.id);
 	const kyc = await KycVerify.findById(req.params.id);
 	const user = await User.findById(kyc.user_id);
-	console.log('user', user.name);
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
 	const newKyc = {
 		_id: kyc._id,
 		user_id: kyc.user_id,
@@ -66,9 +69,8 @@ exports.getSinglePendingKyc = catchAsyncErrors(async (req, res, next) => {
 		status: kyc.status,
 		date: kyc.createdAt,
 		join_date: user.createdAt,
+		nid_no: kyc.nid_no,
 	};
-
-	console.log('newKyc', newKyc);
 
 	res.status(200).json({
 		success: true,
@@ -118,5 +120,56 @@ exports.approveKyc = catchAsyncErrors(async (req, res, next) => {
 	res.status(200).json({
 		success: true,
 		message: 'KYC approved',
+	});
+});
+
+// kyc reject
+exports.rejectKyc = catchAsyncErrors(async (req, res, next) => {
+	const { reasons, id } = req.body;
+
+	const kyc = await KycVerify.findById(id);
+	if (!kyc) {
+		return next(new ErrorHandler('KYC not found', 404));
+	}
+	const user = await User.findById(kyc.user_id);
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
+
+	// update kyc
+	kyc.status = 'rejected';
+	kyc.is_verified = false;
+	kyc.reject_reasons = reasons;
+	await kyc.save();
+
+	// update user
+	user.kyc_verified = false;
+	user.is_verify_request = false;
+	await user.save();
+
+	// send notification to user
+	const userNotification = await UserNotification.create({
+		user_id: user._id,
+		subject: 'KYC Rejected',
+		description: `Your KYC has been rejected. Reasons: ${reasons}`,
+		link: '/profile',
+	});
+
+	global.io.emit('user-notification', userNotification);
+
+	// send email to user
+	const html = templateKycReject(user.name, reasons);
+
+	await sendEmail({
+		email: user.email,
+		subject: 'KYC Rejected',
+		html,
+	});
+
+	// remove this kyc
+	await KycVerify.findByIdAndDelete(id);
+	res.status(200).json({
+		success: true,
+		message: 'KYC rejected',
 	});
 });

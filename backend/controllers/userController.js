@@ -430,18 +430,6 @@ exports.verifyEmail = catchAsyncErrors(async (req, res, next) => {
 	// update user
 	user.email_verified = true;
 	user.verify_code = null;
-	user.m_balance += 2;
-	createTransaction(
-		user._id,
-		'cashIn',
-		2,
-		user.m_balance + user.ai_balance,
-		'bonus',
-		`Signup bonus $2.00 from Glomax`
-	);
-	user.signup_bonus += 2;
-	user.trading_volume += 2 * 1;
-	company.total_trade_volume += 2 * 1;
 	await user.save();
 
 	// create withdraw details
