@@ -140,11 +140,9 @@ exports.newWithdrawRequest = catchAsyncErrors(async (req, res, next) => {
 	await company.save();
 	// send notification to admin
 	const adminNotification = await AdminNotification.create({
+		user_id: user._id,
 		subject: 'New withdraw request',
-		subject_id: withdraw._id,
-		type: 'withdraw',
-		username: user.name,
-		message: `New withdraw request of ${numAmount} was created by ${user.name}`,
+		description: `New withdraw request of ${numAmount} was created by ${user.name}`,
 		url: `/withdraws/${withdraw._id}`,
 	});
 

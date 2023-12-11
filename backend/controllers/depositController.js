@@ -174,7 +174,7 @@ async function checkTxIdMatch(id) {
 
 			// update sponsor
 			if (parent_1.is_active) {
-				parent_1.m_balance += 2;
+				parent_1.e_balance += 2;
 				parent_1.b_balance += 2;
 				parent_1.referral_bonus += 2;
 				await parent_1.save();
@@ -212,7 +212,7 @@ async function checkTxIdMatch(id) {
 		if (parent_1.is_active) {
 			parent_1.m_balance += txId.amount * 0.05;
 			parent_1.b_balance += txId.amount * 0.05;
-			parent_1.referral_bonus += txId.amount * 0.05;
+			parent_1.total_commission += txId.amount * 0.05;
 			await parent_1.save();
 			totalCost += txId.amount * 0.05;
 			createTransaction(
@@ -229,7 +229,7 @@ async function checkTxIdMatch(id) {
 		if (parent_2.is_active) {
 			parent_2.m_balance += txId.amount * 0.02;
 			parent_2.b_balance += txId.amount * 0.02;
-			parent_2.referral_bonus += txId.amount * 0.02;
+			parent_2.total_commission += txId.amount * 0.02;
 			await parent_2.save();
 			totalCost += txId.amount * 0.02;
 			createTransaction(
@@ -246,7 +246,7 @@ async function checkTxIdMatch(id) {
 		if (parent_3.is_active) {
 			parent_3.m_balance += txId.amount * 0.01;
 			parent_3.b_balance += txId.amount * 0.01;
-			parent_3.referral_bonus += txId.amount * 0.01;
+			parent_3.total_commission += txId.amount * 0.01;
 			await parent_3.save();
 			totalCost += txId.amount * 0.01;
 			createTransaction(
@@ -263,7 +263,7 @@ async function checkTxIdMatch(id) {
 		if (parent_4.is_active) {
 			parent_4.m_balance += txId.amount * 0.01;
 			parent_4.b_balance += txId.amount * 0.01;
-			parent_4.referral_bonus += txId.amount * 0.01;
+			parent_4.total_commission += txId.amount * 0.01;
 			await parent_4.save();
 			totalCost += txId.amount * 0.01;
 			createTransaction(
@@ -280,7 +280,7 @@ async function checkTxIdMatch(id) {
 		if (parent_5.is_active) {
 			parent_5.m_balance += txId.amount * 0.01;
 			parent_5.b_balance += txId.amount * 0.01;
-			parent_5.referral_bonus += txId.amount * 0.01;
+			parent_5.total_commission += txId.amount * 0.01;
 			await parent_5.save();
 			totalCost += txId.amount * 0.01;
 			createTransaction(
@@ -707,7 +707,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 
 		// update sponsor
 		if (parent_1.is_active) {
-			parent_1.m_balance += 2;
+			parent_1.e_balance += 2;
 			parent_1.b_balance += 2;
 			parent_1.referral_bonus += 2;
 			await parent_1.save();
@@ -744,7 +744,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	if (parent_1.is_active) {
 		parent_1.m_balance += deposit.amount * 0.05;
 		parent_1.b_balance += deposit.amount * 0.05;
-		parent_1.referral_bonus += deposit.amount * 0.05;
+		parent_1.total_commission += deposit.amount * 0.05;
 		await parent_1.save();
 		totalCost += deposit.amount * 0.05;
 		createTransaction(
@@ -761,7 +761,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	if (parent_2.is_active) {
 		parent_2.m_balance += deposit.amount * 0.02;
 		parent_2.b_balance += deposit.amount * 0.02;
-		parent_2.referral_bonus += deposit.amount * 0.02;
+		parent_2.total_commission += deposit.amount * 0.02;
 		await parent_2.save();
 		totalCost += deposit.amount * 0.02;
 		createTransaction(
@@ -778,7 +778,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	if (parent_3.is_active) {
 		parent_3.m_balance += deposit.amount * 0.01;
 		parent_3.b_balance += deposit.amount * 0.01;
-		parent_3.referral_bonus += deposit.amount * 0.01;
+		parent_3.total_commission += deposit.amount * 0.01;
 		await parent_3.save();
 		totalCost += deposit.amount * 0.01;
 		createTransaction(
@@ -795,7 +795,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	if (parent_4.is_active) {
 		parent_4.m_balance += deposit.amount * 0.01;
 		parent_4.b_balance += deposit.amount * 0.01;
-		parent_4.referral_bonus += deposit.amount * 0.01;
+		parent_4.total_commission += deposit.amount * 0.01;
 		await parent_4.save();
 		totalCost += deposit.amount * 0.01;
 		createTransaction(
@@ -812,7 +812,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	if (parent_5.is_active) {
 		parent_5.m_balance += deposit.amount * 0.01;
 		parent_5.b_balance += deposit.amount * 0.01;
-		parent_5.referral_bonus += deposit.amount * 0.01;
+		parent_5.total_commission += deposit.amount * 0.01;
 		await parent_5.save();
 		totalCost += deposit.amount * 0.01;
 		createTransaction(

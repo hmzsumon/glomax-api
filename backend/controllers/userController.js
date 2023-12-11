@@ -2110,7 +2110,7 @@ exports.claimRankBonus = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// update user rank_claimed: true
-	user.m_balance += numAmount;
+	user.e_balance += numAmount;
 	createTransaction(
 		user._id,
 		'cashIn',
@@ -2723,6 +2723,7 @@ exports.submitKyc = catchAsyncErrors(async (req, res, next) => {
 	});
 
 	// update user
+
 	user.is_verify_request = true;
 	await user.save();
 

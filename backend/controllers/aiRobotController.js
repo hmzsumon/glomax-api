@@ -63,6 +63,7 @@ exports.newAiRobot = catchAsyncErrors(async (req, res, next) => {
 
 	// update user balance
 	user.ai_balance -= mumInvestment;
+	user.p_ai_balance = mumInvestment;
 	user.ai_robot = true;
 	await user.save();
 
@@ -373,27 +374,37 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	// find parent_1
 	const parent_1 = await User.findOne({
 		customer_id: user.parent_1.customer_id,
-	}).select('trade_com m_balance username ai_balance is_active name');
+	}).select(
+		'trade_com m_balance username ai_balance is_active name total_commission'
+	);
 
 	// find parent_2
 	const parent_2 = await User.findOne({
 		customer_id: user.parent_2.customer_id,
-	}).select('trade_com m_balance username ai_balance is_active name');
+	}).select(
+		'trade_com m_balance username ai_balance is_active name total_commission'
+	);
 
 	// find parent_3
 	const parent_3 = await User.findOne({
 		customer_id: user.parent_3.customer_id,
-	}).select('trade_com m_balance username ai_balance is_active name');
+	}).select(
+		'trade_com m_balance username ai_balance is_active name total_commission'
+	);
 
 	// find parent_4
 	const parent_4 = await User.findOne({
 		customer_id: user.parent_4.customer_id,
-	}).select('trade_com m_balance username ai_balance is_active name');
+	}).select(
+		'trade_com m_balance username ai_balance is_active name total_commission'
+	);
 
 	// find parent_5
 	const parent_5 = await User.findOne({
 		customer_id: user.parent_5.customer_id,
-	}).select('trade_com m_balance username ai_balance is_active name');
+	}).select(
+		'trade_com m_balance username ai_balance is_active name total_commission'
+	);
 
 	// find aiRobotRecord by user_id
 	const aiRobotRecord = await AiRobotRecord.findOne({ user_id: user._id });
@@ -402,7 +413,37 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	user.ai_robot = false;
 	user.is_can_withdraw = true;
 	user.ai_balance += aiRobot.current_investment;
-	user.m_balance += netProfit;
+	user.e_balance += netProfit;
+	user.p_ai_balance = 0;
+
+	// burn user balance by user total_commission
+	if (user.total_commission >= 500) {
+		const total_balance = user.m_balance + user.ai_balance;
+		const diff = total_balance - user.total_commission;
+		user.e_balance += user.total_commission * 0.05;
+		createTransaction(
+			user._id,
+			'cashIn',
+			user.total_commission * 0.05,
+			user.m_balance + user.ai_balance,
+			'commission',
+			`Commission Burned  $${Number(user.total_commission).toFixed(
+				2
+			)}USDT from Your wallet & add $${Number(
+				user.total_commission * 0.05
+			).toFixed(2)}USDT in E-wallet `
+		);
+
+		if (user.m_balance > user.total_commission) {
+			user.m_balance = user.total_commission;
+		} else {
+			user.m_balance = 0;
+			user.ai_balance = diff;
+		}
+		user.total_commission = Number(0);
+		// console.log('burn', user.total_commission);
+	}
+
 	// decrease trading_volume amount by profit_amount 10%
 	const decAmount = profit_amount * 0.1;
 	// console.log('dec', decAmount);
@@ -431,9 +472,10 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 
 	// update parent_1 balance
 	if (parent_1.is_active) {
-		// console.log('parent_1 01', parent_1.name);
 		parent_1.m_balance += aiRobotCharge * 0.3;
 		parent_1.trade_com.level_1 += aiRobotCharge * 0.3;
+
+		parent_1.total_commission += Number(aiRobotCharge * 0.3);
 		await parent_1.save();
 		createTransaction(
 			parent_1._id,
@@ -452,6 +494,7 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 		// console.log('parent_2 01', parent_2.name);
 		parent_2.m_balance += aiRobotCharge * 0.25;
 		parent_2.trade_com.level_2 += aiRobotCharge * 0.25;
+		parent_2.total_commission += aiRobotCharge * 0.25;
 		await parent_2.save();
 		createTransaction(
 			parent_2._id,
@@ -468,6 +511,7 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 		// console.log('parent_3 01', parent_3.name);
 		parent_3.m_balance += aiRobotCharge * 0.2;
 		parent_3.trade_com.level_3 += aiRobotCharge * 0.2;
+		parent_3.total_commission += aiRobotCharge * 0.2;
 		await parent_3.save();
 		createTransaction(
 			parent_3._id,
@@ -484,6 +528,7 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 		// console.log('parent_4 01', parent_4.name);
 		parent_4.m_balance += aiRobotCharge * 0.1;
 		parent_4.trade_com.level_4 += aiRobotCharge * 0.1;
+		parent_4.total_commission += aiRobotCharge * 0.1;
 		await parent_4.save();
 		createTransaction(
 			parent_4._id,
@@ -500,6 +545,7 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 		// console.log('parent_5 01', parent_5.name);
 		parent_5.m_balance += aiRobotCharge * 0.05;
 		parent_5.trade_com.level_5 += aiRobotCharge * 0.05;
+		parent_5.total_commission += aiRobotCharge * 0.05;
 		await parent_5.save();
 		createTransaction(
 			parent_5._id,

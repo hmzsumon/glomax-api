@@ -35,6 +35,7 @@ const notification = require('./routes/notificationRoute');
 const adminWinner = require('./routes/adminWinnerRoute');
 const withdraw = require('./routes/withdrawRoute');
 const userNotification = require('./routes/userNotificationRoute');
+const kyc = require('./routes/kycRoute');
 const email = require('./routes/emailRoute');
 
 // Middleware for Errors
@@ -50,6 +51,7 @@ app.use('/api/v1', adminWinner);
 app.use('/api/v1', withdraw);
 app.use('/api/v1', userNotification);
 app.use('/api/v1', email);
+app.use('/api/v1', kyc);
 
 // app.get('/', (req, res) => {
 // 	res.sendFile(path.join(__dirname, 'index.html'));

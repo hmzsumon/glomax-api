@@ -46,7 +46,7 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 	// find parent_1
 	const parent_1 = await User.findOne({
 		customer_id: user.parent_1.customer_id,
-	}).select('m_balance trade_com ai_balance');
+	}).select('m_balance trade_com ai_balance total_commission');
 
 	if (!parent_1) {
 		return next(new ErrorHandler('Parent 1 not found', 404));
@@ -55,7 +55,7 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 	// find parent_2
 	const parent_2 = await User.findOne({
 		customer_id: user.parent_2.customer_id,
-	}).select('m_balance trade_com  ai_balance');
+	}).select('m_balance trade_com  ai_balance total_commission');
 
 	if (!parent_2) {
 		return next(new ErrorHandler('Parent 2 not found', 404));
@@ -64,7 +64,7 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 	// find parent_3
 	const parent_3 = await User.findOne({
 		customer_id: user.parent_3.customer_id,
-	}).select('m_balance trade_com ai_balance');
+	}).select('m_balance trade_com ai_balance total_commission');
 
 	if (!parent_3) {
 		return next(new ErrorHandler('Parent 3 not found', 404));
@@ -145,6 +145,7 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 	if (parent_1.is_active) {
 		parent_1.m_balance += trade_charge * 0.3;
 		parent_1.trade_com.level_1 += trade_charge * 0.3;
+		parent_1.total_commission += trade_charge * 0.3;
 		await parent_1.save();
 		createTransaction(
 			parent_1._id,
@@ -160,6 +161,7 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 	if (parent_2.is_active) {
 		parent_2.m_balance += trade_charge * 0.2;
 		parent_2.trade_com.level_2 += trade_charge * 0.2;
+		parent_2.total_commission += trade_charge * 0.2;
 		await parent_2.save();
 		createTransaction(
 			parent_2._id,
@@ -175,6 +177,7 @@ exports.createTrade = catchAsyncErrors(async (req, res, next) => {
 	if (parent_3.is_active) {
 		parent_3.m_balance += trade_charge * 0.1;
 		parent_3.trade_com.level_3 += trade_charge * 0.1;
+		parent_3.total_commission += trade_charge * 0.1;
 		await parent_3.save();
 		createTransaction(
 			parent_3._id,
@@ -223,7 +226,7 @@ const updateTrade = async (trade, retryCount = 0) => {
 			`https://api4.binance.com/api/v3/ticker/price?symbol=${trade.symbol}`
 		);
 
-		console.log('response', response.data.price);
+		// console.log('response', response.data.price);
 
 		if (response) {
 			close_price = response.data.price;
@@ -299,7 +302,7 @@ const updateTrade = async (trade, retryCount = 0) => {
 		trade.close_price = close_price;
 	}
 
-	console.log('result2 Cus', result);
+	// console.log('result2 Cus', result);
 
 	// update trade
 
@@ -319,8 +322,9 @@ const updateTrade = async (trade, retryCount = 0) => {
 		company.total_trade_amount -= totalProfit;
 		company.game.game_cost += totalProfit;
 		// update user m_balance
-		user.m_balance += totalProfit;
-		console.log('totalProfit', totalProfit, typeof totalProfit);
+		user.e_balance += profit;
+		user.m_balance += trade.trade_amount;
+		// console.log('totalProfit', totalProfit, typeof totalProfit);
 		company.total_main_balance += Number(totalProfit);
 
 		createTransaction(
@@ -329,10 +333,17 @@ const updateTrade = async (trade, retryCount = 0) => {
 			totalProfit,
 			user.m_balance + user.ai_balance,
 			'trade_profit',
-			`Trade Profit from Glomax`
+			`Trade Profit ${profit}USDT  && Trade amount ${trade.trade_amount}USDT from Glomax `
 		);
 	} else {
-		tradeRecord.total_loss += trade.amount;
+		console.log(trade.trade_amount);
+		tradeRecord.total_loss += trade.trade_amount;
+		if (
+			user.total_commission > 0 &&
+			user.total_commission >= trade.trade_amount
+		) {
+			user.total_commission -= trade.trade_amount;
+		}
 	}
 
 	user.active_trade -= 1;
@@ -399,8 +410,8 @@ exports.updateTrade = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('Company not found', 404));
 	}
 
-	console.log('open price', trade.open_price, 'close price', close_price);
-	console.log('Trade Type', trade.trade_type);
+	// console.log('open price', trade.open_price, 'close price', close_price);
+	// console.log('Trade Type', trade.trade_type);
 
 	let result = null;
 	let profit = 0;
@@ -421,12 +432,12 @@ exports.updateTrade = catchAsyncErrors(async (req, res, next) => {
 		}
 	}
 
-	console.log('result1 Ori', result);
+	// console.log('result1 Ori', result);
 
 	if (result === 'win') {
 		profit = trade.trade_amount * 0.85;
 		totalProfit = trade.trade_amount + profit;
-		console.log(totalProfit > globalTradeAmount);
+		// console.log(totalProfit > globalTradeAmount);
 		if (totalProfit > globalTradeAmount) {
 			result = 'loss';
 
@@ -442,7 +453,7 @@ exports.updateTrade = catchAsyncErrors(async (req, res, next) => {
 		trade.close_price = close_price;
 	}
 
-	console.log('result2 Cus', result);
+	// console.log('result2 Cus', result);
 
 	// update trade
 
@@ -454,7 +465,7 @@ exports.updateTrade = catchAsyncErrors(async (req, res, next) => {
 	trade.result = result;
 	is_active = false;
 	await trade.save();
-	console.log('Updated trade', trade.close_price);
+	// console.log('Updated trade', trade.close_price);
 	// update tradeRecord
 	if (result === 'win') {
 		tradeRecord.total_profit += profit;
@@ -462,9 +473,17 @@ exports.updateTrade = catchAsyncErrors(async (req, res, next) => {
 		company.total_trade_amount -= totalProfit;
 		company.game.game_cost += totalProfit;
 		// update user m_balance
-		user.m_balance += totalProfit;
-
+		user.m_balance += trade.trade_amount;
+		user.e_balance += profit;
 		await user.save();
+		createTransaction(
+			user._id,
+			'cashIn',
+			profit,
+			user.m_balance + user.ai_balance,
+			'trade_profit',
+			`Trade Profit from Glomax`
+		);
 	} else {
 		tradeRecord.total_loss += trade.amount;
 	}

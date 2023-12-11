@@ -68,8 +68,18 @@ const userSchema = new mongoose.Schema(
 			default: 0,
 		},
 
+		e_balance: {
+			type: Number,
+			default: 0,
+		},
+
 		// ai balance (ai balance is used for ai trading)
 		ai_balance: {
+			type: Number,
+			default: 0,
+		},
+
+		p_ai_balance: {
 			type: Number,
 			default: 0,
 		},
@@ -138,6 +148,11 @@ const userSchema = new mongoose.Schema(
 				type: Number,
 				default: 0,
 			},
+		},
+
+		total_commission: {
+			type: Number,
+			default: 0,
 		},
 
 		// trade option
@@ -392,6 +407,10 @@ const userSchema = new mongoose.Schema(
 		is_block: {
 			type: Boolean,
 			default: false,
+		},
+
+		promo_code: {
+			type: String,
 		},
 
 		resetPasswordToken: String,
