@@ -2682,8 +2682,18 @@ exports.changePassword = catchAsyncErrors(async (req, res, next) => {
 // submit kyc
 exports.submitKyc = catchAsyncErrors(async (req, res, next) => {
 	const userId = req.user._id;
-	const { name, address, city, zip, country, nidNo, nidOne, nidTwo, photo } =
-		req.body;
+	const {
+		name,
+		address,
+		city,
+		zip,
+		country,
+		nidNo,
+		nidOne,
+		nidTwo,
+		photo,
+		date_of_birth,
+	} = req.body;
 
 	// find user by id
 	const user = await User.findById(userId);
@@ -2715,6 +2725,7 @@ exports.submitKyc = catchAsyncErrors(async (req, res, next) => {
 		nid_1_url: nidOne,
 		nid_2_url: nidTwo,
 		photo_url: photo,
+		date_of_birth,
 	});
 
 	// update user
@@ -2725,5 +2736,28 @@ exports.submitKyc = catchAsyncErrors(async (req, res, next) => {
 	res.status(200).json({
 		success: true,
 		message: 'KYC submitted successfully',
+	});
+});
+
+// update all total_commission: null to 0
+exports.updateAllTotalCommission = catchAsyncErrors(async (req, res, next) => {
+	const users = await User.find({ total_commission: null });
+	if (!users) {
+		console.log('users not found');
+	}
+
+	console.log('Length', users.length);
+
+	for (let i = 0; i < users.length; i++) {
+		const user = users[i];
+		// console.log(user);
+
+		user.total_commission = 0;
+		await user.save();
+	}
+
+	res.status(200).json({
+		success: true,
+		message: 'All users total_commission: null updated successfully',
 	});
 });

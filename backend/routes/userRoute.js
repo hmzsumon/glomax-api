@@ -42,6 +42,7 @@ const {
 	updateAllUsersIsActive,
 	changePassword,
 	submitKyc,
+	updateAllTotalCommission,
 } = require('../controllers/userController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -196,5 +197,8 @@ router.route('/change-password').put(isAuthenticatedUser, changePassword);
 
 // submit kyc
 router.route('/submit-kyc').post(isAuthenticatedUser, submitKyc);
+
+// update all total commission
+router.route('/update-all-total-commission').put(updateAllTotalCommission);
 
 module.exports = router;

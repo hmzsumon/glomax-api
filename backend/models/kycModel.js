@@ -58,6 +58,10 @@ const kycSchema = new Schema(
 			default: false,
 		},
 
+		date_of_birth: {
+			type: Date,
+		},
+
 		status: {
 			type: String,
 			enum: ['pending', 'approved', 'rejected'],
