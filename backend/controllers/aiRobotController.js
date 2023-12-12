@@ -417,35 +417,6 @@ exports.claimAiRobotProfit = catchAsyncErrors(async (req, res, next) => {
 	user.total_e_balance += netProfit;
 	user.p_ai_balance = 0;
 
-	// burn user balance by user total_commission
-	if (user.total_commission >= 500) {
-		const total_balance = user.m_balance + user.ai_balance;
-		const diff = total_balance - user.total_commission;
-		user.e_balance += user.total_commission * 0.05;
-		user.total_e_balance += user.total_commission * 0.05;
-		createTransaction(
-			user._id,
-			'cashIn',
-			user.total_commission * 0.05,
-			user.m_balance + user.ai_balance,
-			'commission',
-			`Commission Burned  $${Number(user.total_commission).toFixed(
-				2
-			)}USDT from Your wallet & add $${Number(
-				user.total_commission * 0.05
-			).toFixed(2)}USDT in E-wallet `
-		);
-
-		if (user.m_balance > user.total_commission) {
-			user.m_balance = user.total_commission;
-		} else {
-			user.m_balance = 0;
-			user.ai_balance = diff;
-		}
-		user.total_commission = Number(0);
-		// console.log('burn', user.total_commission);
-	}
-
 	// decrease trading_volume amount by profit_amount 10%
 	const decAmount = profit_amount * 0.1;
 	// console.log('dec', decAmount);

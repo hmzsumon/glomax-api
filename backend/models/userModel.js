@@ -419,6 +419,14 @@ const userSchema = new mongoose.Schema(
 			type: String,
 		},
 
+		trc20_address: {
+			type: String,
+		},
+		is_payment_method: {
+			type: Boolean,
+			default: false,
+		},
+
 		resetPasswordToken: String,
 		resetPasswordExpire: Date,
 	},

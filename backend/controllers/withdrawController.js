@@ -95,17 +95,11 @@ exports.newWithdrawRequest = catchAsyncErrors(async (req, res, next) => {
 	const total_balance = user.m_balance + user.ai_balance - user.trading_volume;
 
 	// check if user has enough balance
-	if (total_balance < numAmount) {
+	if (user.e_balance < numAmount) {
 		return next(new ErrorHandler('Insufficient balance', 400));
 	}
 
-	if (numAmount > user.m_balance) {
-		const diff = numAmount - user.m_balance;
-		user.ai_balance -= diff;
-		user.m_balance = 0;
-	} else {
-		user.m_balance -= numAmount;
-	}
+	user.e_balance -= numAmount;
 	createTransaction(
 		user._id,
 		'cashOut',

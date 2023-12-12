@@ -43,6 +43,8 @@ const {
 	changePassword,
 	submitKyc,
 	updateAllTotalCommission,
+	addPaymentMethod,
+	addPromoCode,
 } = require('../controllers/userController');
 
 const { isAuthenticatedUser, authorizeRoles } = require('../middleware/auth');
@@ -200,5 +202,11 @@ router.route('/submit-kyc').post(isAuthenticatedUser, submitKyc);
 
 // update all total commission
 router.route('/update-all-total-commission').put(updateAllTotalCommission);
+
+// add payment method
+router.route('/add-payment-method').post(isAuthenticatedUser, addPaymentMethod);
+
+// add promo code
+router.route('/add-promo-code').post(addPromoCode);
 
 module.exports = router;

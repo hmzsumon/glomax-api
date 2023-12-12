@@ -153,11 +153,13 @@ exports.allUsersBalanceInfo = catchAsyncErrors(async (req, res, next) => {
 	let total_ai_balance = 0;
 	let total_trade_volume = 0;
 	let total_ai_active_balance = 0;
+	let total_e_balance = 0;
 
 	for (let i = 0; i < users.length; i++) {
 		total_main_balance += users[i].m_balance;
 		total_ai_balance += users[i].ai_balance;
 		total_trade_volume += users[i].trading_volume;
+		total_e_balance += users[i].e_balance;
 	}
 
 	// find all active ai robots
@@ -174,6 +176,7 @@ exports.allUsersBalanceInfo = catchAsyncErrors(async (req, res, next) => {
 		total_ai_balance,
 		total_trade_volume,
 		total_ai_active_balance,
+		total_e_balance,
 	};
 
 	res.status(200).json({

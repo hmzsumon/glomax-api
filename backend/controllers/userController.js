@@ -557,7 +557,7 @@ exports.securityVerify = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('User not found', 404));
 	}
 
-	if (user.verify_code !== '123456') {
+	if (user.verify_code !== code) {
 		return next(new ErrorHandler('Invalid code', 400));
 	}
 
@@ -2097,6 +2097,19 @@ exports.claimRankBonus = catchAsyncErrors(async (req, res, next) => {
 		return next(new ErrorHandler('Rank bonus already claimed', 400));
 	}
 
+	// check if rankRecord current_rank is "premier" then create promo_code and update user promo_code
+	if (rankRecord.current_rank === 'premier') {
+		// check if promo code already exists, regenerate if necessary
+		let existingUser = await User.findOne({ promo_code: promoCode });
+		while (existingUser) {
+			promoCode = generatePromoCode();
+			existingUser = await User.findOne({ promo_code: promoCode });
+		}
+
+		user.promo_code = promoCode;
+		// await user.save();
+	}
+
 	// update user rank_claimed: true
 	user.e_balance += numAmount;
 	user.total_e_balance += numAmount;
@@ -2761,3 +2774,86 @@ exports.updateAllTotalCommission = catchAsyncErrors(async (req, res, next) => {
 		message: 'All users total_commission: null updated successfully',
 	});
 });
+
+// add payment method
+exports.addPaymentMethod = catchAsyncErrors(async (req, res, next) => {
+	const userId = req.user._id;
+	const { trc20Address } = req.body;
+
+	// find user by id
+	const user = await User.findById(userId);
+	if (!user) {
+		return next(new ErrorHandler('User not found', 404));
+	}
+
+	// check if trc20 address already exist
+	const existAddress = await User.findOne({ trc20_address: trc20Address });
+	if (existAddress) {
+		return next(new ErrorHandler('TRC20 address already exist', 400));
+	}
+
+	// update user
+	user.trc20_address = trc20Address;
+	user.is_payment_method = true;
+	await user.save();
+
+	// send notification to user
+	const userNotification = await UserNotification.create({
+		user_id: user._id,
+		subject: 'Payment Method Added',
+		description: `TRC20 address added successfully`,
+		url: '/payment-method',
+	});
+
+	global.io.emit('user-notification', userNotification);
+
+	res.status(200).json({
+		success: true,
+		message: 'TRC20 address added successfully',
+	});
+});
+
+// add promo code for user rank premier to supreme
+exports.addPromoCode = catchAsyncErrors(async (req, res, next) => {
+	// find user by rank premier to supreme
+	const users = await User.find({
+		$or: [
+			{ rank: 'premier' },
+			{ rank: 'elite' },
+			{ rank: 'majestic' },
+			{ rank: 'royal' },
+			{ rank: 'glorious' },
+			{ rank: 'marvelous' },
+		],
+	});
+
+	console.log(users.length);
+
+	// update user promo code
+	for (let i = 0; i < users.length; i++) {
+		const user = users[i];
+
+		// create 6 digit unique promo code
+		let promoCode = generatePromoCode();
+
+		// check if promo code already exists, regenerate if necessary
+		let existingUser = await User.findOne({ promo_code: promoCode });
+		while (existingUser) {
+			promoCode = generatePromoCode();
+			existingUser = await User.findOne({ promo_code: promoCode });
+		}
+
+		user.promo_code = promoCode;
+		await user.save();
+	}
+
+	res.status(200).json({
+		success: true,
+		message: 'Promo code used successfully',
+	});
+});
+
+// Function to generate a 6-digit promo code
+function generatePromoCode() {
+	return Math.floor(100000 + Math.random() * 900000).toString();
+}

@@ -70,6 +70,11 @@ const depositSchema = new mongoose.Schema(
 		sl_no: {
 			type: Number,
 		},
+
+		promo_code: {
+			type: String,
+		},
+
 		parents: [
 			{
 				user_id: {

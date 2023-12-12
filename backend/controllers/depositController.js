@@ -129,7 +129,7 @@ async function checkTxIdMatch(id) {
 			user.is_active = true;
 		}
 		user.is_deposit_requested = false;
-		user.m_balance += txId.amount;
+		user.ai_balance += txId.amount;
 		user.is_can_withdraw = false;
 		createTransaction(
 			user._id,
@@ -145,11 +145,32 @@ async function checkTxIdMatch(id) {
 		let mainBalance = txId.amount;
 		let tradingVolume = txId.amount * 0.1;
 
-		if (deposit.amount >= 10 && deposit.is_bonus === true) {
+		if (txId.amount >= 50 && deposit.promo_code !== ' ') {
+			// find user by promo_code and update e_balance 5%
+
+			const promoUser = await User.findOne({ promo_code: deposit.promo_code });
+			if (!promoUser) {
+				return next(new ErrorHandler('Invalid promo code', 400));
+			}
+
+			// console.log('promoUser', promoUser.name);
+
+			promoUser.e_balance += txId.amount * 0.05;
+			promoUser.total_e_balance += txId.amount * 0.05;
+			promoUser.b_balance += txId.amount * 0.05;
+			await promoUser.save();
+			totalCost += txId.amount * 0.05;
+			createTransaction(
+				promoUser._id,
+				'cashIn',
+				txId.amount * 0.05,
+				promoUser.m_balance + promoUser.ai_balance,
+				'bonus',
+				`Promo Code Bonus from Glomax by ${user.name}`
+			);
+
 			user.b_balance += txId.amount * 0.05;
-			user.m_balance += txId.amount * 0.05;
-			tradingVolume += txId.amount * 0.05 * 5;
-			mainBalance += txId.amount * 0.05;
+			user.ai_balance += txId.amount * 0.05;
 			// console.log('trading_volume', deposit.amount * 0.1 * 5);
 			createTransaction(
 				user._id,
@@ -165,6 +186,7 @@ async function checkTxIdMatch(id) {
 			company.total_tarde_volume += txId.amount * 0.05 * 5;
 		}
 
+		// if user is new user
 		if (user.is_newUser) {
 			// console.log('new user', user.name);
 			depositDetails.first_deposit_amount += txId.amount;
@@ -173,7 +195,7 @@ async function checkTxIdMatch(id) {
 			depositDetails.is_new = false;
 
 			// update sponsor
-			if (parent_1.is_active) {
+			if (parent_1.is_active && parent_1.kyc_verified) {
 				parent_1.e_balance += 2;
 				parent_1.total_e_balance += 2;
 				parent_1.b_balance += 2;
@@ -210,8 +232,9 @@ async function checkTxIdMatch(id) {
 		await user.save();
 
 		// update parent_1 m_balance 5% of deposit amount
-		if (parent_1.is_active) {
-			parent_1.m_balance += txId.amount * 0.05;
+		if (parent_1.is_active && parent_1.kyc_verified) {
+			parent_1.e_balance += txId.amount * 0.05;
+			parent_1.total_e_balance += txId.amount * 0.05;
 			parent_1.b_balance += txId.amount * 0.05;
 			parent_1.total_commission += txId.amount * 0.05;
 			await parent_1.save();
@@ -227,8 +250,9 @@ async function checkTxIdMatch(id) {
 		}
 
 		// update parent_2 m_balance 3% of deposit amount
-		if (parent_2.is_active) {
-			parent_2.m_balance += txId.amount * 0.02;
+		if (parent_2.is_active && parent_2.kyc_verified) {
+			parent_2.e_balance += txId.amount * 0.02;
+			parent_2.total_e_balance += txId.amount * 0.02;
 			parent_2.b_balance += txId.amount * 0.02;
 			parent_2.total_commission += txId.amount * 0.02;
 			await parent_2.save();
@@ -244,8 +268,9 @@ async function checkTxIdMatch(id) {
 		}
 
 		// update parent_3 m_balance 2% of deposit amount
-		if (parent_3.is_active) {
-			parent_3.m_balance += txId.amount * 0.01;
+		if (parent_3.is_active && parent_3.kyc_verified) {
+			parent_3.e_balance += txId.amount * 0.01;
+			parent_3.total_e_balance += txId.amount * 0.01;
 			parent_3.b_balance += txId.amount * 0.01;
 			parent_3.total_commission += txId.amount * 0.01;
 			await parent_3.save();
@@ -261,8 +286,9 @@ async function checkTxIdMatch(id) {
 		}
 
 		// update parent_4 m_balance 1% of deposit amount
-		if (parent_4.is_active) {
-			parent_4.m_balance += txId.amount * 0.01;
+		if (parent_4.is_active && parent_4.kyc_verified) {
+			parent_4.e_balance += txId.amount * 0.01;
+			parent_4.total_e_balance += txId.amount * 0.01;
 			parent_4.b_balance += txId.amount * 0.01;
 			parent_4.total_commission += txId.amount * 0.01;
 			await parent_4.save();
@@ -278,8 +304,9 @@ async function checkTxIdMatch(id) {
 		}
 
 		// update parent_5 m_balance 1% of deposit amount
-		if (parent_5.is_active) {
-			parent_5.m_balance += txId.amount * 0.01;
+		if (parent_5.is_active && parent_5.kyc_verified) {
+			parent_5.e_balance += txId.amount * 0.01;
+			parent_5.total_e_balance += txId.amount * 0.01;
 			parent_5.b_balance += txId.amount * 0.01;
 			parent_5.total_commission += txId.amount * 0.01;
 			await parent_5.save();
@@ -408,7 +435,7 @@ exports.createDeposit = catchAsyncErrors(async (req, res, next) => {
 	}
 
 	// console.log(req.body);
-	const { amount, transactionId, is_bonus } = req.body;
+	const { amount, transactionId, promo_code } = req.body;
 
 	// convert amount to number
 	const numAmount = Number(amount);
@@ -429,7 +456,7 @@ exports.createDeposit = catchAsyncErrors(async (req, res, next) => {
 		phone: user.phone,
 		amount: numAmount,
 		transactionId,
-		is_bonus,
+		promo_code,
 		sl_no,
 	});
 
@@ -663,7 +690,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		user.is_active = true;
 	}
 	user.is_deposit_requested = false;
-	user.m_balance += deposit.amount;
+	user.ai_balance += deposit.amount;
 	user.is_can_withdraw = false;
 	createTransaction(
 		user._id,
@@ -679,12 +706,32 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 	let mainBalance = deposit.amount;
 	let tradingVolume = deposit.amount * 0.1;
 
-	if (deposit.amount >= 10 && deposit.is_bonus === true) {
+	if (deposit.amount >= 50 && deposit.promo_code !== ' ') {
+		// find user by promo_code and update e_balance 5%
+		const promoUser = await User.findOne({ promo_code: deposit.promo_code });
+		if (!promoUser) {
+			return next(new ErrorHandler('Invalid promo code', 400));
+		}
+
+		// console.log('promoUser', promoUser.name);
+
+		promoUser.e_balance += deposit.amount * 0.05;
+		promoUser.total_e_balance += deposit.amount * 0.05;
+		promoUser.b_balance += deposit.amount * 0.05;
+		await promoUser.save();
+		totalCost += deposit.amount * 0.05;
+		createTransaction(
+			promoUser._id,
+			'cashIn',
+			deposit.amount * 0.05,
+			promoUser.m_balance + promoUser.ai_balance,
+			'bonus',
+			`Promo Code Bonus from Glomax by ${user.name}`
+		);
+
 		user.b_balance += deposit.amount * 0.05;
-		user.m_balance += deposit.amount * 0.05;
-		tradingVolume += deposit.amount * 0.05 * 5;
-		mainBalance += deposit.amount * 0.05;
-		// console.log('trading_volume', deposit.amount * 0.1 * 5);
+		user.ai_balance += deposit.amount * 0.05;
+
 		createTransaction(
 			user._id,
 			'cashIn',
@@ -707,7 +754,7 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 		depositDetails.is_new = false;
 
 		// update sponsor
-		if (parent_1.is_active) {
+		if (parent_1.is_active && parent_1.kyc_verified) {
 			parent_1.e_balance += 2;
 			parent_1.total_e_balance += 2;
 			parent_1.b_balance += 2;
@@ -744,7 +791,8 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 
 	// update parent_1 m_balance 5% of deposit amount
 	if (parent_1.is_active && parent_1.kyc_verified) {
-		parent_1.m_balance += deposit.amount * 0.05;
+		parent_1.e_balance += deposit.amount * 0.05;
+		parent_1.total_e_balance += deposit.amount * 0.05;
 		parent_1.b_balance += deposit.amount * 0.05;
 		parent_1.total_commission += deposit.amount * 0.05;
 		await parent_1.save();
@@ -761,7 +809,8 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 
 	// update parent_2 m_balance 3% of deposit amount
 	if (parent_2.is_active && parent_2.kyc_verified) {
-		parent_2.m_balance += deposit.amount * 0.02;
+		parent_2.e_balance += deposit.amount * 0.02;
+		parent_2.total_e_balance += deposit.amount * 0.02;
 		parent_2.b_balance += deposit.amount * 0.02;
 		parent_2.total_commission += deposit.amount * 0.02;
 		await parent_2.save();
@@ -778,7 +827,8 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 
 	// update parent_3 m_balance 2% of deposit amount
 	if (parent_3.is_active && parent_3.kyc_verified) {
-		parent_3.m_balance += deposit.amount * 0.01;
+		parent_3.e_balance += deposit.amount * 0.01;
+		parent_3.total_e_balance += deposit.amount * 0.01;
 		parent_3.b_balance += deposit.amount * 0.01;
 		parent_3.total_commission += deposit.amount * 0.01;
 		await parent_3.save();
@@ -795,7 +845,8 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 
 	// update parent_4 m_balance 1% of deposit amount
 	if (parent_4.is_active && parent_4.kyc_verified) {
-		parent_4.m_balance += deposit.amount * 0.01;
+		parent_4.e_balance += deposit.amount * 0.01;
+		parent_4.total_e_balance += deposit.amount * 0.01;
 		parent_4.b_balance += deposit.amount * 0.01;
 		parent_4.total_commission += deposit.amount * 0.01;
 		await parent_4.save();
@@ -812,7 +863,8 @@ exports.approveDeposit = catchAsyncErrors(async (req, res, next) => {
 
 	// update parent_5 m_balance 1% of deposit amount
 	if (parent_5.is_active && parent_5.kyc_verified) {
-		parent_5.m_balance += deposit.amount * 0.01;
+		parent_5.e_balance += deposit.amount * 0.01;
+		parent_5.total_e_balance += deposit.amount * 0.01;
 		parent_5.b_balance += deposit.amount * 0.01;
 		parent_5.total_commission += deposit.amount * 0.01;
 		await parent_5.save();
